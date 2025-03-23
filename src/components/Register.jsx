@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import UserTypeMenu from './UserTypeMenu';
 import '../styles/Register.css';
 import AuthContainer from './AuthFormContainer';
 import { DownArrow, UpArrow } from './SVGs';
+
+const VALID_USER_TYPES = ['Admin', 'Student', 'Supervisor', 'Client'];
 
 function Register({ onNavigateToLogin }) {
   const [fullName, setFullName] = useState('');
@@ -10,14 +12,29 @@ function Register({ onNavigateToLogin }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState('User');
+  const [selectedUserType, setSelectedUserType] = useState('Select Role');
+  const [roleError, setRoleError] = useState('');
   const userMenuRef = useRef(null);
+
+  // Reset error when user changes selection
+  useEffect(() => {
+    if (roleError && VALID_USER_TYPES.includes(selectedUserType)) {
+      setRoleError('');
+    }
+  }, [selectedUserType, roleError]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     // Validate passwords match
     if (password !== confirmPassword) {
       alert("Passwords don't match!");
+      return;
+    }
+
+    // Validate role selection
+    if (!VALID_USER_TYPES.includes(selectedUserType)) {
+      setRoleError('Please select a role');
       return;
     }
    
@@ -26,12 +43,16 @@ function Register({ onNavigateToLogin }) {
     alert(`Registration successful as ${selectedUserType}! Please login.`);
     onNavigateToLogin();
   };
-
+  
   const handleUserTypeSelect = (type) => {
-    setSelectedUserType(type);
+    // Only allow setting to valid user types
+    if (VALID_USER_TYPES.includes(type)) {
+      setSelectedUserType(type);
+      setRoleError('');
+    }
     setIsUserMenuOpen(false);
   };
-
+  
   return (
     <AuthContainer>
       <div className="register-card">
@@ -81,17 +102,20 @@ function Register({ onNavigateToLogin }) {
           <div className="user-type-container" ref={userMenuRef}>
             <button
               type="button"
-              className="user-type-button"
+              className={`user-type-button ${roleError ? 'error' : ''}`}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             >
               {selectedUserType}
               {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
             </button>
+            
+            {roleError && <div className="error-message">{roleError}</div>}
            
             {isUserMenuOpen && (
               <UserTypeMenu
                 onSelect={handleUserTypeSelect}
                 closeMenu={() => setIsUserMenuOpen(false)}
+                userTypes={VALID_USER_TYPES}
               />
             )}
           </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import '../styles/UserTypeMenu.css';
 
-function UserTypeMenu({ onSelect, closeMenu }) {
+function UserTypeMenu({ onSelect, closeMenu, userTypes = ['Admin', 'Student', 'Supervisor', 'Client'] }) {
   const menuRef = useRef(null);
  
   useEffect(() => {
@@ -11,13 +11,14 @@ function UserTypeMenu({ onSelect, closeMenu }) {
       }
     }
    
+    // Position the menu correctly based on the button
     const buttonElement = menuRef.current?.parentElement?.querySelector('.user-type-button');
     if (buttonElement && menuRef.current) {
       const rect = buttonElement.getBoundingClientRect();
       
+      // Position dropdown 2px below the button
       menuRef.current.style.top = `${rect.bottom + window.scrollY + 2}px`;
       menuRef.current.style.left = `${rect.left + window.scrollX}px`;
-      
       menuRef.current.style.width = '200px';
     }
     
@@ -27,8 +28,6 @@ function UserTypeMenu({ onSelect, closeMenu }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [closeMenu]);
-
-  const userTypes = ['Admin', 'Student', 'Supervisor', 'Client'];
   
   return (
     <div className="user-type-menu" ref={menuRef}>
