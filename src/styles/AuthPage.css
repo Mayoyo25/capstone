@@ -35,20 +35,6 @@
   animation: fadeInBg 0.5s ease-in forwards;
 }
 
-@media (max-width: 768px) {
-  .auth-page::before {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
-                      url('/businessmen-shaking-hands-small.png');
-  }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .auth-page::before {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
-                      url('/businessmen-shaking-hands@2x.png');
-  }
-}
-
 @keyframes fadeInBg {
   0% { opacity: 0; }
   100% { opacity: 1; }
