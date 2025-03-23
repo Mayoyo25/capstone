@@ -5,71 +5,94 @@ import AuthContainer from './AuthFormContainer';
 import { DownArrow, UpArrow } from './SVGs';
 import authService from '../services/authService'
 
+const VALID_USER_TYPES = ['Admin', 'Student', 'Supervisor', 'Client'];
+
 function Login({ onNavigateToRegister, onNavigateToForgot, onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState('User');
+  const [selectedUserType, setSelectedUserType] = useState('User Role');
   const userMenuRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [roleError, setRoleError] = useState('');
 
   // Login submit function
-const handleSubmit = async (e) => {
-  e.preventDefault();
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
   
-  try {
-    setLoading(true);
-    setError('');
+//   try {
+//     setLoading(true);
+//     setError('');
     
-    // Call the login API
-    const response = await authService.login(email, password);
+//     // Call the login API
+//     const response = await authService.login(email, password);
     
-    // Extract user type from token
-    const userData = authService.getCurrentUser();
-    const userType = userData?.user_type;
+//     // Extract user type from token
+//     const userData = authService.getCurrentUser();
+//     const userType = userData?.user_type;
     
-    // Map backend user type to frontend representation if needed
-    const userTypeMap = {
-      'ADMIN': 'Admin',
-      'STUDENT': 'Student',
-      'SUPERVISOR': 'Supervisor',
-      'CLIENT': 'Client'
-    };
+//     // Map backend user type to frontend representation if needed
+//     const userTypeMap = {
+//       'ADMIN': 'Admin',
+//       'STUDENT': 'Student',
+//       'SUPERVISOR': 'Supervisor',
+//       'CLIENT': 'Client'
+//     };
     
-    // Pass user data and mapped user type to parent component
-    onLogin(userData, userTypeMap[userType] || userType);
+//     // Pass user data and mapped user type to parent component
+//     onLogin(userData, userTypeMap[userType] || userType);
     
-  } catch (error) {
-    console.error('Login error:', error);
+//   } catch (error) {
+//     console.error('Login error:', error);
     
-    // Handle specific error responses from the server
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      if (error.response.status === 401) {
-        setError('Invalid email or password');
-      } else if (error.response.data && error.response.data.detail) {
-        setError(error.response.data.detail);
-      } else {
-        setError('Login failed. Please try again.');
-      }
-    } else if (error.request) {
-      // The request was made but no response was received
-      setError('No response from server. Please check your connection.');
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      setError('Error occurred while logging in. Please try again.');
+//     // Handle specific error responses from the server
+//     if (error.response) {
+//       // The request was made and the server responded with a status code
+//       // that falls out of the range of 2xx
+//       if (error.response.status === 401) {
+//         setError('Invalid email or password');
+//       } else if (error.response.data && error.response.data.detail) {
+//         setError(error.response.data.detail);
+//       } else {
+//         setError('Login failed. Please try again.');
+//       }
+//     } else if (error.request) {
+//       // The request was made but no response was received
+//       setError('No response from server. Please check your connection.');
+//     } else {
+//       // Something happened in setting up the request that triggered an Error
+//       setError('Error occurred while logging in. Please try again.');
+//     }
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+ const handleSubmit = (e) => {
+    e.preventDefault();
+    try {
+  if (!VALID_USER_TYPES.includes(selectedUserType)) {
+    setRoleError('Please select a role');
+      return;
+   } const userData = { email };
+    onLogin(userData, selectedUserType);
+
+    } catch (error) {
+      console.log(error);
     }
-  } finally {
-    setLoading(false);
-  }
-};
-  const handleUserTypeSelect = (type) => {
-    setSelectedUserType(type);
-    setIsUserMenuOpen(false);
+   
   };
+
+   const handleUserTypeSelect = (type) => {
+      // Only allow setting to valid user types
+      if (VALID_USER_TYPES.includes(type)) {
+        setSelectedUserType(type);
+        setRoleError('');
+      }
+      setIsUserMenuOpen(false);
+    };
 
   return (
     <div className='login-wrapper'>
@@ -94,9 +117,10 @@ const handleSubmit = async (e) => {
       </div>
       <AuthContainer>
       <div className="login-card">
+        {roleError && <div className="role-error-temporary">{roleError}</div>}
       <div className="logo">CPMP</div>
       <h2>Login</h2>
-      
+       
       <form onSubmit={handleSubmit}>
         <div className="input-group">
           <input

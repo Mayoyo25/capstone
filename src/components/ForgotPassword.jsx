@@ -9,41 +9,47 @@ function ForgotPassword({ onNavigateToLogin }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Forgot Password submit function
-const handleSubmit = async (e) => {
-  e.preventDefault();
   
-  try {
-    setLoading(true);
-    setError('');
-    setIsSubmitted(false);
-    
-    // Make API call to request password reset
-    await authService.forgotPassword(email);
-    
-    // Show success message
+ const handleSubmit = (e) => {
+    e.preventDefault();
+    // Here you'd typically make an API call to send a reset email
+    // For this example, we'll just simulate a successful submission
     setIsSubmitted(true);
+  };
+  // Forgot Password submit function
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
+  
+//   try {
+//     setLoading(true);
+//     setError('');
+//     setIsSubmitted(false);
     
-  } catch (error) {
-    console.error('Password reset error:', error);
+//     // Make API call to request password reset
+//     await authService.forgotPassword(email);
     
-    // Handle errors
-    if (error.response && error.response.data) {
-      if (error.response.data.detail) {
-        setError(error.response.data.detail);
-      } else if (error.response.data.email) {
-        setError(error.response.data.email.join(' '));
-      } else {
-        setError('Error sending reset link. Please try again.');
-      }
-    } else {
-      setError('Network error. Please check your connection and try again.');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+//     // Show success message
+//     setIsSubmitted(true);
+    
+//   } catch (error) {
+//     console.error('Password reset error:', error);
+    
+//     // Handle errors
+//     if (error.response && error.response.data) {
+//       if (error.response.data.detail) {
+//         setError(error.response.data.detail);
+//       } else if (error.response.data.email) {
+//         setError(error.response.data.email.join(' '));
+//       } else {
+//         setError('Error sending reset link. Please try again.');
+//       }
+//     } else {
+//       setError('Network error. Please check your connection and try again.');
+//     }
+//   } finally {
+//     setLoading(false);
+//   }
+// };
   return (
     <AuthContainer>
     <div className="forgot-password-card">

@@ -88,36 +88,48 @@ function Register({ onNavigateToLogin }) {
       setLoading(false);
     }
   };
-
-  const handleSubmit = async (e) => {
+const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Clear previous errors
-    setErrorMessage('');
-    setRoleError('');
-    
     // Validate passwords match
     if (password !== confirmPassword) {
-      setErrorMessage("Passwords don't match!");
-      return;
-    }
-
-    // Validate role selection
-    if (!VALID_USER_TYPES.includes(selectedUserType)) {
-      setRoleError('Please select a role');
+      alert("Passwords don't match!");
       return;
     }
    
-    try {
-      await register();
-      // Show success message
-      alert('Registration successful! Please login.');
-      onNavigateToLogin();
-    } catch (error) {
-      // Error is already handled in the register function
-      console.error('Registration error:', error);
-    }
+    // Here you'd typically make an API call to register the user
+    // For this example, we'll just simulate a successful registration
+    alert(`Registration successful as ${selectedUserType}! Please login.`);
+    onNavigateToLogin();
   };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+    
+  //   // Clear previous errors
+  //   setErrorMessage('');
+  //   setRoleError('');
+    
+  //   // Validate passwords match
+  //   if (password !== confirmPassword) {
+  //     setErrorMessage("Passwords don't match!");
+  //     return;
+  //   }
+
+  //   // Validate role selection
+  //   if (!VALID_USER_TYPES.includes(selectedUserType)) {
+  //     setRoleError('Please select a role');
+  //     return;
+  //   }
+   
+  //   try {
+  //     await register();
+  //     // Show success message
+  //     alert('Registration successful! Please login.');
+  //     onNavigateToLogin();
+  //   } catch (error) {
+  //     // Error is already handled in the register function
+  //     console.error('Registration error:', error);
+  //   }
+  // };
   
   const handleUserTypeSelect = (type) => {
     // Only allow setting to valid user types
