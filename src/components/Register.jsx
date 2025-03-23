@@ -3,6 +3,7 @@ import UserTypeMenu from './UserTypeMenu';
 import '../styles/Register.css';
 import AuthContainer from './AuthFormContainer';
 import { DownArrow, UpArrow } from './SVGs';
+import authService from '../services/authService'
 
 const VALID_USER_TYPES = ['Admin', 'Student', 'Supervisor', 'Client'];
 
@@ -14,21 +15,90 @@ function Register({ onNavigateToLogin }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [selectedUserType, setSelectedUserType] = useState('Select Role');
   const [roleError, setRoleError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const userMenuRef = useRef(null);
 
   // Reset error when user changes selection
-  useEffect(() => {
+ useEffect(() => {
     if (roleError && VALID_USER_TYPES.includes(selectedUserType)) {
       setRoleError('');
     }
   }, [selectedUserType, roleError]);
 
-  const handleSubmit = (e) => {
+  const register = async () => {
+    try {
+      setLoading(true);
+      setErrorMessage('');
+      
+      // Parse the full name into first and last name
+      const nameParts = fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      // Generate a username from email if needed
+      const username = email.split('@')[0];
+      
+      // Map the UI user type to Django's expected format
+      const userTypeMap = {
+        'Admin': 'ADMIN',
+        'Student': 'STUDENT',
+        'Supervisor': 'SUPERVISOR',
+        'Client': 'CLIENT'
+      };
+      
+      // Create the user data object
+      const userData = {
+        username: username,
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        password: password,
+        password2: confirmPassword,
+        user_type: userTypeMap[selectedUserType]
+      };
+      
+      // Send the registration request
+      const response = await authService.register(userData);
+      return response;
+    } catch (error) {
+      // Handle different types of errors
+      if (error.response && error.response.data) {
+        // Extract error messages from the response
+        const errorData = error.response.data;
+        let errorMsg = '';
+        
+        // Django REST Framework returns errors in different formats
+        if (typeof errorData === 'string') {
+          errorMsg = errorData;
+        } else if (typeof errorData === 'object') {
+          // Combine all error messages
+          errorMsg = Object.keys(errorData)
+            .map(key => `${key}: ${errorData[key].join(' ')}`)
+            .join('\n');
+        }
+        
+        setErrorMessage(errorMsg || 'Registration failed');
+      } else {
+        setErrorMessage('Network error. Please try again later.');
+      }
+      
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Clear previous errors
+    setErrorMessage('');
+    setRoleError('');
     
     // Validate passwords match
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      setErrorMessage("Passwords don't match!");
       return;
     }
 
@@ -38,10 +108,15 @@ function Register({ onNavigateToLogin }) {
       return;
     }
    
-    // Here you'd typically make an API call to register the user
-    // For this example, we'll just simulate a successful registration
-    alert(`Registration successful as ${selectedUserType}! Please login.`);
-    onNavigateToLogin();
+    try {
+      await register();
+      // Show success message
+      alert('Registration successful! Please login.');
+      onNavigateToLogin();
+    } catch (error) {
+      // Error is already handled in the register function
+      console.error('Registration error:', error);
+    }
   };
   
   const handleUserTypeSelect = (type) => {
@@ -58,6 +133,12 @@ function Register({ onNavigateToLogin }) {
       <div className="register-card">
         <div className="logo">CPMP</div>
         <h2>Register</h2>
+
+        {errorMessage && (
+        <div className="error-message">
+          {errorMessage}
+        </div>
+      )}
        
         <form onSubmit={handleSubmit}>
           <div className="input-group">
@@ -99,8 +180,8 @@ function Register({ onNavigateToLogin }) {
             />
           </div>
          
-          <div className="user-type-container" ref={userMenuRef}>
-            <button
+          <div className={`user-type-container ${roleError ? 'error' : ''}`} ref={userMenuRef}>
+          <button
               type="button"
               className={`user-type-button ${roleError ? 'error' : ''}`}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -108,26 +189,33 @@ function Register({ onNavigateToLogin }) {
               {selectedUserType}
               {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
             </button>
-            
-            {roleError && <div className="error-message">{roleError}</div>}
-           
-            {isUserMenuOpen && (
-              <UserTypeMenu
-                onSelect={handleUserTypeSelect}
-                closeMenu={() => setIsUserMenuOpen(false)}
-                userTypes={VALID_USER_TYPES}
-              />
-            )}
-          </div>
+          
+          {roleError && <div className="role-error">{roleError}</div>}
+          
+          {isUserMenuOpen && (
+            <UserTypeMenu 
+              onSelect={handleUserTypeSelect}
+              closeMenu={() => setIsUserMenuOpen(false)}
+              options={VALID_USER_TYPES}
+            />
+          )}
+        </div>
          
-          <button type="submit" className="register-button">Register</button>
-          <button
-            type="button"
-            className="back-to-login-button"
-            onClick={onNavigateToLogin}
-          >
-            Back to Login
-          </button>
+          <button 
+          type="submit" 
+          className={`register-button ${loading ? 'loading' : ''}`}
+          disabled={loading}
+        >
+          {loading ? 'Registering...' : 'Register'}
+        </button>
+        <button 
+          type="button" 
+          className="back-to-login-button"
+          onClick={onNavigateToLogin}
+          disabled={loading}
+        >
+          Back to Login
+        </button>
         </form>
       </div>
     </AuthContainer>
