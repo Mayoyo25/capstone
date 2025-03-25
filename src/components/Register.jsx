@@ -1,13 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import UserTypeMenu from './UserTypeMenu';
+import React, { useState, useEffect, useRef } from 'react';
+import { VALID_USER_TYPES, mapUserTypeToBackend } from '../utils/userTypeUtils';
 import '../styles/Register.css';
 import AuthContainer from './AuthFormContainer';
+import UserTypeMenu from './UserTypeMenu';
 import { DownArrow, UpArrow } from './SVGs';
-import authService from '../services/authService'
+import authService from '../services/authService';
+import { useNavigate } from 'react-router-dom';
+import AuthPageWrapper from './AuthPageWrapper';
 
-const VALID_USER_TYPES = ['Admin', 'Student', 'Supervisor', 'Client'];
+function Register() {
+  const navigate = useNavigate();
 
-function Register({ onNavigateToLogin }) {
+  // Local state for form inputs
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,38 +20,39 @@ function Register({ onNavigateToLogin }) {
   const [selectedUserType, setSelectedUserType] = useState('Select Role');
   const [roleError, setRoleError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState('');
+
   const userMenuRef = useRef(null);
 
-  // Reset error when user changes selection
- useEffect(() => {
+  // Reset form state
+  const resetState = () => {
+    setFullName('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setSelectedUserType('Select Role');
+    setRoleError('');
+    setError('');
+  };
+
+  // Clear role error if a valid role is selected
+  useEffect(() => {
     if (roleError && VALID_USER_TYPES.includes(selectedUserType)) {
       setRoleError('');
     }
   }, [selectedUserType, roleError]);
 
+  // Handle registration logic
   const register = async () => {
     try {
       setLoading(true);
-      setErrorMessage('');
-      
-      // Parse the full name into first and last name
+      setError('');
+
       const nameParts = fullName.trim().split(' ');
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
-      
-      // Generate a username from email if needed
       const username = email.split('@')[0];
-      
-      // Map the UI user type to Django's expected format
-      const userTypeMap = {
-        'Admin': 'ADMIN',
-        'Student': 'STUDENT',
-        'Supervisor': 'SUPERVISOR',
-        'Client': 'CLIENT'
-      };
-      
-      // Create the user data object
+
       const userData = {
         username: username,
         email: email,
@@ -55,182 +60,151 @@ function Register({ onNavigateToLogin }) {
         last_name: lastName,
         password: password,
         password2: confirmPassword,
-        user_type: userTypeMap[selectedUserType]
+        user_type: mapUserTypeToBackend(selectedUserType),
       };
+      console.log(userData);
       
-      // Send the registration request
-      const response = await authService.register(userData);
-      return response;
+      await authService.register(userData);
     } catch (error) {
-      // Handle different types of errors
       if (error.response && error.response.data) {
-        // Extract error messages from the response
         const errorData = error.response.data;
         let errorMsg = '';
-        
-        // Django REST Framework returns errors in different formats
+
         if (typeof errorData === 'string') {
           errorMsg = errorData;
         } else if (typeof errorData === 'object') {
-          // Combine all error messages
           errorMsg = Object.keys(errorData)
-            .map(key => `${key}: ${errorData[key].join(' ')}`)
+            .map((key) => `${key}: ${errorData[key].join(' ')}`)
             .join('\n');
         }
-        
-        setErrorMessage(errorMsg || 'Registration failed');
+
+        setError(errorMsg || 'Registration failed');
       } else {
-        setErrorMessage('Network error. Please try again later.');
+        setError('Network error. Please try again later.');
       }
-      
+
       throw error;
     } finally {
       setLoading(false);
     }
   };
-const handleSubmit = (e) => {
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validate passwords match
+
     if (password !== confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
-   
-    // Here you'd typically make an API call to register the user
-    // For this example, we'll just simulate a successful registration
-    alert(`Registration successful as ${selectedUserType}! Please login.`);
-    onNavigateToLogin();
-  };
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-    
-  //   // Clear previous errors
-  //   setErrorMessage('');
-  //   setRoleError('');
-    
-  //   // Validate passwords match
-  //   if (password !== confirmPassword) {
-  //     setErrorMessage("Passwords don't match!");
-  //     return;
-  //   }
 
-  //   // Validate role selection
-  //   if (!VALID_USER_TYPES.includes(selectedUserType)) {
-  //     setRoleError('Please select a role');
-  //     return;
-  //   }
-   
-  //   try {
-  //     await register();
-  //     // Show success message
-  //     alert('Registration successful! Please login.');
-  //     onNavigateToLogin();
-  //   } catch (error) {
-  //     // Error is already handled in the register function
-  //     console.error('Registration error:', error);
-  //   }
-  // };
-  
+    if (!VALID_USER_TYPES.includes(selectedUserType)) {
+      setRoleError('Please select a valid role');
+      return;
+    }
+
+    try {
+      await register();
+      resetState();
+      navigate('/login');
+    } catch (err) {
+      console.error('Registration failed', err);
+    }
+  };
+
+  // Handle user type selection
   const handleUserTypeSelect = (type) => {
-    // Only allow setting to valid user types
     if (VALID_USER_TYPES.includes(type)) {
       setSelectedUserType(type);
-      setRoleError('');
     }
     setIsUserMenuOpen(false);
   };
-  
-  return (
-    <AuthContainer>
-      <div className="register-card">
-        <div className="logo">CPMP</div>
-        <h2>Register</h2>
 
-        {errorMessage && (
-        <div className="error-message">
-          {errorMessage}
-        </div>
-      )}
-       
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Full Name"
-              required
-            />
-          </div>
-          <div className="input-group">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email Address"
-              required
-            />
-          </div>
-         
-          <div className="input-group">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-            />
-          </div>
-         
-          <div className="input-group">
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm Password"
-              required
-            />
-          </div>
-         
-          <div className={`user-type-container ${roleError ? 'error' : ''}`} ref={userMenuRef}>
-          <button
-              type="button"
-              className={`user-type-button ${roleError ? 'error' : ''}`}
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+  return (
+    <AuthPageWrapper>
+      <AuthContainer>
+        <div className="register-card">
+          <div className="logo">CPMP</div>
+          <h2>Register</h2>
+
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Full Name"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email Address"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm Password"
+                required
+              />
+            </div>
+
+            <div className={`user-type-container ${roleError ? 'error' : ''}`} ref={userMenuRef}>
+              <button
+                type="button"
+                className={`user-type-button ${roleError ? 'error' : ''}`}
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              >
+                {selectedUserType}
+                {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
+              </button>
+
+              {roleError && <div className="role-error">{roleError}</div>}
+
+              {isUserMenuOpen && (
+                <UserTypeMenu
+                  onSelect={handleUserTypeSelect}
+                  closeMenu={() => setIsUserMenuOpen(false)}
+                  options={VALID_USER_TYPES}
+                />
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className={`register-button ${loading ? 'loading' : ''}`}
+              disabled={loading}
             >
-              {selectedUserType}
-              {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
+              {loading ? 'Registering...' : 'Register'}
             </button>
-          
-          {roleError && <div className="role-error">{roleError}</div>}
-          
-          {isUserMenuOpen && (
-            <UserTypeMenu 
-              onSelect={handleUserTypeSelect}
-              closeMenu={() => setIsUserMenuOpen(false)}
-              options={VALID_USER_TYPES}
-            />
-          )}
+            <button
+              type="button"
+              className="back-to-login-button"
+              onClick={() => navigate('/login')}
+              disabled={loading}
+            >
+              Back to Login
+            </button>
+          </form>
         </div>
-         
-          <button 
-          type="submit" 
-          className={`register-button ${loading ? 'loading' : ''}`}
-          disabled={loading}
-        >
-          {loading ? 'Registering...' : 'Register'}
-        </button>
-        <button 
-          type="button" 
-          className="back-to-login-button"
-          onClick={onNavigateToLogin}
-          disabled={loading}
-        >
-          Back to Login
-        </button>
-        </form>
-      </div>
-    </AuthContainer>
+      </AuthContainer>
+    </AuthPageWrapper>
   );
 }
 

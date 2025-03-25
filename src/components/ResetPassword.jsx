@@ -1,50 +1,64 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuthStore from '../stores/authStore';
 import authService from '../services/authService';
+import AuthPageWrapper from './AuthPageWrapper';
 
-const ResetPassword = () => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [resetSuccess, setResetSuccess] = useState(false);
+function ResetPassword() {
+  const {
+    password,
+    confirmPassword,
+    loading,
+    error,
+    resetSuccess,
+    setPassword,
+    setConfirmPassword,
+    setLoading,
+    setError,
+    setResetSuccess,
+    resetState,
+  } = useAuthStore();
+
   const navigate = useNavigate();
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError('');
-      
+      setResetSuccess(false);
+
       // Validate passwords match
       if (password !== confirmPassword) {
         setError("Passwords don't match!");
         return;
       }
-      
+
       // Get token and uid from URL query params
       const params = new URLSearchParams(window.location.search);
       const token = params.get('token');
       const uid = params.get('uid');
-      
+
       if (!token || !uid) {
         setError('Invalid password reset link');
         return;
       }
-      
+
       // Submit password reset request
       await authService.resetPassword(uid, token, password, confirmPassword);
-      
-      // Show success message and redirect to login
+
+      // Show success message
       setResetSuccess(true);
+
+      // Redirect to login after 3 seconds
       setTimeout(() => {
+        resetState();
         navigate('/login');
       }, 3000);
-      
     } catch (error) {
       console.error('Password reset error:', error);
-      
+
       if (error.response && error.response.data) {
         if (error.response.data.detail) {
           setError(error.response.data.detail);
@@ -55,7 +69,7 @@ const ResetPassword = () => {
           const errorMsg = Object.entries(error.response.data)
             .map(([key, value]) => `${key}: ${value.join(' ')}`)
             .join('\n');
-            
+
           setError(errorMsg || 'Failed to reset password');
         }
       } else {
@@ -67,13 +81,12 @@ const ResetPassword = () => {
   };
 
   return (
+    <AuthPageWrapper>
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">Reset Your Password</h1>
-          <p className="mt-2 text-gray-600">
-            Please enter your new password below
-          </p>
+          <p className="mt-2 text-gray-600">Please enter your new password below</p>
         </div>
 
         {resetSuccess ? (
@@ -135,15 +148,16 @@ const ResetPassword = () => {
             </div>
 
             <div className="text-center text-sm">
-              <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
                 Back to login
-              </a>
+              </Link>
             </div>
           </form>
         )}
       </div>
     </div>
+  </AuthPageWrapper>
   );
-};
+}
 
 export default ResetPassword;

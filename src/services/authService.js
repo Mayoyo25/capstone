@@ -64,6 +64,8 @@ const register = async (userData) => {
 };
 
 const login = async (email, password) => {
+    console.log({email,password});
+    
     const response = await axiosInstance.post('token/', { email, password });
     if (response.data.access) {
         localStorage.setItem('access_token', response.data.access);

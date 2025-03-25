@@ -86,3 +86,13 @@ label {
   font-size: 16px;
   cursor: pointer;
 }
+
+.error-message {
+  color: red;
+  background-color: #ffeeee;
+  border: 1px solid red;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  text-align: center;
+}

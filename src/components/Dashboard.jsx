@@ -1,101 +1,33 @@
 import React from 'react';
 import '../styles/Dashboard.css';
+import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../stores/authStore';
+import DashboardUserType from './DashboardUserType';
 
-function Dashboard({ user, userType, onLogout }) {
+function Dashboard() {
+    const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const { email, userType } = user;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   return (
     <div className="dashboard">
       <header>
         <div className="logo">CPMP</div>
         <div className="user-info">
-          <span>{user.email}</span>
+          <span>{email}</span>
           <span className="user-type-badge">{userType}</span>
-          <button onClick={onLogout} className="logout-button">Logout</button>
+          <button onClick={handleLogout} className="logout-button">Logout</button>
         </div>
       </header>
       
       <main>
         <h1>Welcome to the {userType} Dashboard</h1>
         <p>This is a placeholder for the {userType.toLowerCase()} dashboard content.</p>
-        
-        {userType === 'Admin' && (
-          <div className="admin-panel">
-            <h2>Admin Controls</h2>
-            <div className="admin-cards">
-              <div className="admin-card">
-                <h3>User Management</h3>
-                <p>Manage system users</p>
-              </div>
-              <div className="admin-card">
-                <h3>Settings</h3>
-                <p>System configuration</p>
-              </div>
-              <div className="admin-card">
-                <h3>Reports</h3>
-                <p>View system reports</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {userType === 'Student' && (
-          <div className="student-panel">
-            <h2>Student Portal</h2>
-            <div className="student-cards">
-              <div className="student-card">
-                <h3>Courses</h3>
-                <p>View your enrolled courses</p>
-              </div>
-              <div className="student-card">
-                <h3>Assignments</h3>
-                <p>Submit and track assignments</p>
-              </div>
-              <div className="student-card">
-                <h3>Grades</h3>
-                <p>Check your grades</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {userType === 'Supervisor' && (
-          <div className="supervisor-panel">
-            <h2>Supervisor Dashboard</h2>
-            <div className="supervisor-cards">
-              <div className="supervisor-card">
-                <h3>Students</h3>
-                <p>Manage your students</p>
-              </div>
-              <div className="supervisor-card">
-                <h3>Evaluations</h3>
-                <p>Conduct evaluations</p>
-              </div>
-              <div className="supervisor-card">
-                <h3>Reports</h3>
-                <p>Generate reports</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {userType === 'Client' && (
-          <div className="client-panel">
-            <h2>Client Portal</h2>
-            <div className="client-cards">
-              <div className="client-card">
-                <h3>Projects</h3>
-                <p>View your projects</p>
-              </div>
-              <div className="client-card">
-                <h3>Invoices</h3>
-                <p>Manage invoices</p>
-              </div>
-              <div className="client-card">
-                <h3>Support</h3>
-                <p>Contact support</p>
-              </div>
-            </div>
-          </div>
-        )}
+        {userType && <DashboardUserType userType={userType}/>}
       </main>
     </div>
   );

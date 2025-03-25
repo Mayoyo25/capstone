@@ -1,181 +1,125 @@
-import React, { useState, useRef } from 'react';
-import UserTypeMenu from './UserTypeMenu';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../stores/authStore';
+import { VALID_USER_TYPES, mapUserTypeToFrontend } from '../utils/userTypeUtils';
 import '../styles/Login.css';
-import AuthContainer from './AuthFormContainer';
+import UserTypeMenu from './UserTypeMenu';
 import { DownArrow, UpArrow } from './SVGs';
-import authService from '../services/authService'
+import authService from '../services/authService';
+import AuthPageWrapper from './AuthPageWrapper';
+import LoginForm from './LoginForm';
 
-const VALID_USER_TYPES = ['Admin', 'Student', 'Supervisor', 'Client'];
+function Login() {
+  const navigate = useNavigate();
 
-function Login({ onNavigateToRegister, onNavigateToForgot, onLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState('User Role');
-  const userMenuRef = useRef(null);
-  const [loading, setLoading] = useState(false);
+  // Global state (necessary for login logic)
+  const { user, selectedUserType, isUserMenuOpen, setSelectedUserType, setIsUserMenuOpen, login, resetState } =
+    useAuthStore();
+
+  // Local state for form inputs
+  const [email, setEmail] = useState(user.email || '');
+  const [password, setPassword] = useState(user.password || '');
+  const [rememberMe, setRememberMe] = useState(user.rememberMe || false);
   const [error, setError] = useState('');
   const [roleError, setRoleError] = useState('');
 
-  // Login submit function
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
-  
-//   try {
-//     setLoading(true);
-//     setError('');
-    
-//     // Call the login API
-//     const response = await authService.login(email, password);
-    
-//     // Extract user type from token
-//     const userData = authService.getCurrentUser();
-//     const userType = userData?.user_type;
-    
-//     // Map backend user type to frontend representation if needed
-//     const userTypeMap = {
-//       'ADMIN': 'Admin',
-//       'STUDENT': 'Student',
-//       'SUPERVISOR': 'Supervisor',
-//       'CLIENT': 'Client'
-//     };
-    
-//     // Pass user data and mapped user type to parent component
-//     onLogin(userData, userTypeMap[userType] || userType);
-    
-//   } catch (error) {
-//     console.error('Login error:', error);
-    
-//     // Handle specific error responses from the server
-//     if (error.response) {
-//       // The request was made and the server responded with a status code
-//       // that falls out of the range of 2xx
-//       if (error.response.status === 401) {
-//         setError('Invalid email or password');
-//       } else if (error.response.data && error.response.data.detail) {
-//         setError(error.response.data.detail);
-//       } else {
-//         setError('Login failed. Please try again.');
-//       }
-//     } else if (error.request) {
-//       // The request was made but no response was received
-//       setError('No response from server. Please check your connection.');
-//     } else {
-//       // Something happened in setting up the request that triggered an Error
-//       setError('Error occurred while logging in. Please try again.');
-//     }
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
- const handleSubmit = (e) => {
-    e.preventDefault();
-    try {
-  if (!VALID_USER_TYPES.includes(selectedUserType)) {
-    setRoleError('Please select a role');
-      return;
-   } const userData = { email };
-    onLogin(userData, selectedUserType);
-
-    } catch (error) {
-      console.log(error);
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      navigate('/dashboard');
     }
-   
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Reset previous state
+    resetState();
+    setError('');
+
+    // Validate user type
+    if (!VALID_USER_TYPES.includes(selectedUserType)) {
+      setRoleError('Please select a role');
+      return;
+    }
+
+    try {
+      // Perform login
+      await authService.login(email, password);
+
+      // Fetch user data
+      const userData = authService.getCurrentUser();
+      const userType = userData?.user_type;
+      const frontendUserType = mapUserTypeToFrontend(userType);
+
+      // Update login state in the global store
+      login(userData, frontendUserType);
+
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (loginError) {
+      console.error('Login error:', loginError);
+
+      // Detailed error handling
+      let errorMessage = 'Error occurred while logging in. Please try again.';
+
+      if (loginError.response) {
+        if (loginError.response.status === 401) {
+          errorMessage = 'Invalid email or password';
+        } else if (loginError.response.data && loginError.response.data.detail) {
+          errorMessage = loginError.response.data.detail;
+        }
+      } else if (loginError.request) {
+        errorMessage = 'No response from server. Please check your connection.';
+      }
+
+      // Set the error locally
+      setError(errorMessage);
+    }
   };
 
-   const handleUserTypeSelect = (type) => {
-      // Only allow setting to valid user types
-      if (VALID_USER_TYPES.includes(type)) {
-        setSelectedUserType(type);
-        setRoleError('');
-      }
-      setIsUserMenuOpen(false);
-    };
+  const handleUserTypeSelect = (type) => {
+    if (VALID_USER_TYPES.includes(type)) {
+      setSelectedUserType(type);
+    }
+    setIsUserMenuOpen(false);
+  };
 
   return (
-    <div className='login-wrapper'>
-      <div className="roles-parent">
-        <div className="user-type-container" ref={userMenuRef}>
-        <button 
-      type="button" 
-      className="user-type-button"
-      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-    >
-      {selectedUserType}
-      {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
-    </button>
-          
-          {isUserMenuOpen && (
-            <UserTypeMenu 
-              onSelect={handleUserTypeSelect}
-              closeMenu={() => setIsUserMenuOpen(false)}
-            />
-          )}
-        </div>
-      </div>
-      <AuthContainer>
-      <div className="login-card">
-        {roleError && <div className="role-error-temporary">{roleError}</div>}
-      <div className="logo">CPMP</div>
-      <h2>Login</h2>
-       
-      <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email Address"
-            required
-          />
-        </div>
-        
-        <div className="input-group">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
-          />
-        </div>
-        
-        <div className="options-row">
-          <div className="remember-me">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-            />
-            <label htmlFor="rememberMe">Remember Me</label>
+    <AuthPageWrapper>
+      <div className="login-wrapper">
+        <div className="roles-parent">
+          <div className="user-type-container">
+            <button
+              type="button"
+              className="user-type-button"
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            >
+              {selectedUserType}
+              {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
+            </button>
+            {isUserMenuOpen && (
+              <UserTypeMenu
+                onSelect={handleUserTypeSelect}
+                closeMenu={() => setIsUserMenuOpen(false)}
+              />
+            )}
           </div>
-          
-          <button 
-            type="button" 
-            className="text-button"
-            onClick={onNavigateToForgot}
-          >
-            Forgot Password?
-          </button>
         </div>
-        
-        <button type="submit" className="sign-in-button">Sign In</button>
-        <button 
-          type="button" 
-          className="sign-up-button"
-          onClick={onNavigateToRegister}
-        >
-          Sign Up
-        </button>
-      </form>
-    </div>
-    </AuthContainer>
-    </div>
-    
- 
+        <LoginForm
+          roleError={roleError}
+          handleSubmit={handleSubmit}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          rememberMe={rememberMe}
+          setRememberMe={setRememberMe}
+          error={error}
+          navigate={navigate}
+        />
+      </div>
+    </AuthPageWrapper>
   );
 }
 

@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 notes.txt
+notes_1.txt
+*Auth.txt
+*useAuthStore.txt
