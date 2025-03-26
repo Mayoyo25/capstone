@@ -1,117 +1,115 @@
-import React from 'react';
-import useAuthStore from '../stores/authStore';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/ForgotPassword.css';
 import AuthContainer from './AuthFormContainer';
 import authService from '../services/authService';
 import AuthPageWrapper from './AuthPageWrapper';
-import { useNavigate } from 'react-router-dom';
+import SuccessMessage from './SuccessMessage'
+import ForgotPasswordForm from '../forms/ForgotPasswordForm'
 
 function ForgotPassword() {
-  const navigate = useNavigate()
-  const {
-    email,
-    isSubmitted,
-    loading,
-    error,
-    setEmail,
-    setIsSubmitted,
-    setLoading,
-    setError,
-    resetState,
-  } = useAuthStore();
+  const navigate = useNavigate();
 
+  // Local state management
+  const [formState, setFormState] = useState({
+    email: '',
+    isSubmitted: false,
+    loading: false,
+    error: '',
+  });
+
+  // Handle form input changes
+  const handleInputChange = (field, value) => {
+    setFormState(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Reset form state
+  const resetState = () => {
+    setFormState({
+      email: '',
+      isSubmitted: false,
+      loading: false,
+      error: '',
+    });
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      setLoading(true);
-      setError('');
-      setIsSubmitted(false);
+      // Update state to show loading and clear previous errors
+      setFormState(prev => ({
+        ...prev,
+        loading: true,
+        error: '',
+        isSubmitted: false
+      }));
 
       // Make API call to request password reset
-      await authService.forgotPassword(email);
+      await authService.forgotPassword(formState.email);
 
       // Show success message
-      setIsSubmitted(true);
+      setFormState(prev => ({
+        ...prev,
+        isSubmitted: true,
+        loading: false
+      }));
     } catch (error) {
       console.error('Password reset error:', error);
 
-      // Handle errors
-      if (error.response && error.response.data) {
-        if (error.response.data.detail) {
-          setError(error.response.data.detail);
-        } else if (error.response.data.email) {
-          setError(error.response.data.email.join(' '));
-        } else {
-          setError('Error sending reset link. Please try again.');
-        }
-      } else {
-        setError('Network error. Please check your connection and try again.');
-      }
-    } finally {
-      setLoading(false);
+      // Comprehensive error handling
+      const errorMessage = extractErrorMessage(error);
+
+      setFormState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: false
+      }));
     }
+  };
+
+  // Extract meaningful error message
+  const extractErrorMessage = (error) => {
+    if (error.response && error.response.data) {
+      if (error.response.data.detail) {
+        return error.response.data.detail;
+      } else if (error.response.data.email) {
+        return error.response.data.email.join(' ');
+      }
+      return 'Error sending reset link. Please try again.';
+    }
+    return 'Network error. Please check your connection and try again.';
+  };
+
+  // Handle navigation back to login
+  const handleBackToLogin = () => {
+    resetState();
+    navigate('/login');
   };
 
   return (
     <AuthPageWrapper>
-    <AuthContainer>
-      <div className="forgot-password-card">
-        <div className="logo">CPMP</div>
-        <h2>Forgot Password</h2>
+      <AuthContainer>
+        <div className="forgot-password-card">
+          <div className="logo">CPMP</div>
+          <h2>Forgot Password</h2>
 
-        {!isSubmitted ? (
-          <form onSubmit={handleSubmit}>
-            <p>Enter your email address to receive password reset instructions</p>
-
-            <div className="input-group">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email Address"
-                required
-              />
-            </div>
-
-            {error && <div className="error-message">{error}</div>}
-
-            <button
-              type="submit"
-              className={`reset-button ${loading ? 'loading' : ''}`}
-              disabled={loading}
-            >
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-            <button
-              type="button"
-              className="back-to-login-button"
-              onClick={() => {
-                resetState();
-                navigate('/login')
-              }}
-              disabled={loading}
-            >
-              Back to Login
-            </button>
-          </form>
-        ) : (
-          <div className="success-message">
-            <p>Password reset link has been sent to your email address.</p>
-            <button
-              className="back-to-login-button"
-              onClick={() => {
-                resetState();
-                navigate('/login')
-              }}
-            >
-              Back to Login
-            </button>
-          </div>
-        )}
-      </div>
-    </AuthContainer>
-  </AuthPageWrapper>
+          {!formState.isSubmitted ? (
+            <ForgotPasswordForm
+              email={formState.email}
+              loading={formState.loading}
+              error={formState.error}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+              onBackToLogin={handleBackToLogin}
+            />
+          ) : (
+            <SuccessMessage onBackToLogin={handleBackToLogin} />
+          )}
+        </div>
+      </AuthContainer>
+    </AuthPageWrapper>
   );
 }
 

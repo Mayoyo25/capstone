@@ -4,7 +4,7 @@ import authService from '../services/authService';
 
 const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       isAuthenticated: false,
       loading: false,
       error: null,
@@ -12,66 +12,73 @@ const useAuthStore = create(
 
       user: {
         email: '',
-        password: '',
         fullName: '',
         userType: 'User Role',
-        rememberMe: false,
       },
       isUserMenuOpen: false,
-      // Initialize method to set authentication state
+
+      // Simplified initialization method
       initializeAuth: () => {
+        console.log('Initializing authentication state...'); 
         const currentUser = authService.getCurrentUser();
-        
+
         if (currentUser) {
+          console.log('Existing user found:', currentUser);
           set({
             isAuthenticated: true,
             user: {
               email: currentUser.email || '',
               fullName: currentUser.full_name || '',
               userType: currentUser.user_type || 'User Role',
-              password: '',
-              rememberMe: false,
-            }
+            },
+            loading: false,
+            error: null,
           });
         } else {
+          console.log('No current user found.');
           set({
             isAuthenticated: false,
             user: {
               email: '',
-              password: '',
               fullName: '',
               userType: 'User Role',
-              rememberMe: false,
-            }
+            },
+            loading: false,
+            error: null,
           });
         }
       },
+
       setSelectedUserType: (type) => set({ selectedUserType: type }),
       setIsUserMenuOpen: (isOpen) => set({ isUserMenuOpen: isOpen }),
-      login: (userData, userType) => set((state) => ({
-        isAuthenticated: true,
-        user:{ 
-          ...userData, 
-          userType,
-          password: '' 
-        },
-        loading: false,
-        error: null,
-      })),
 
-      logout: () => {
-        authService.logout();
-        return set({
-          isAuthenticated: false,
-          user: {
-            email: '',
-            password: '',
-            fullName: '',
-            userType: 'User Role',
-            rememberMe: false,
+      login: (userData, userType) => {
+        console.log('Login action triggered:', { userData, userType });
+        set({
+          isAuthenticated: true,
+          user: { 
+            email: userData.email || '',
+            fullName: userData.full_name || '',
+            userType: userType || 'User Role',
           },
           loading: false,
           error: null,
+        });
+      },
+
+      logout: () => {
+        console.log('Logout action triggered');
+        authService.logout();
+        set({
+          isAuthenticated: false,
+          user: {
+            email: '',
+            fullName: '',
+            userType: 'User Role',
+          },
+          loading: false,
+          error: null,
+          selectedUserType: 'Select Role',
         });
       },
 
@@ -82,18 +89,15 @@ const useAuthStore = create(
         selectedUserType: 'Select Role',
         user: {
           email: '',
-          password: '',
           fullName: '',
           userType: 'User Role',
-          rememberMe: false,
         },
         isUserMenuOpen: false,
-        roleError: '',
       }),
     }),
     {
-      name: 'auth-storage', // unique name
-      storage: createJSONStorage(() => localStorage), // use localStorage
+      name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: {

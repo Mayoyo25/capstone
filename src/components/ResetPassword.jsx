@@ -1,162 +1,168 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../stores/authStore';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
-import AuthPageWrapper from './AuthPageWrapper';
+import '../styles/ResetPassword.css'
+import AuthPageWrapper from '../components/AuthPageWrapper'
 
 function ResetPassword() {
-  const {
-    password,
-    confirmPassword,
-    loading,
-    error,
-    resetSuccess,
-    setPassword,
-    setConfirmPassword,
-    setLoading,
-    setError,
-    setResetSuccess,
-    resetState,
-  } = useAuthStore();
-
   const navigate = useNavigate();
 
+  // Local state management
+  const [formState, setFormState] = useState({
+    password: '',
+    confirmPassword: '',
+    loading: false,
+    error: '',
+    resetSuccess: false,
+  });
+
+  // Handle input changes
+  const handleInputChange = (field, value) => {
+    setFormState((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Extract URL parameters
+  const getResetParams = () => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const uid = params.get('uid');
+    return { token, uid };
+  };
+
+  // Handle password reset submission
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
+    // Validate inputs
+    if (!validateInputs()) return;
+
     try {
-      setLoading(true);
-      setError('');
-      setResetSuccess(false);
+      // Update state for loading
+      setFormState((prev) => ({
+        ...prev,
+        loading: true,
+        error: '',
+        resetSuccess: false,
+      }));
 
-      // Validate passwords match
-      if (password !== confirmPassword) {
-        setError("Passwords don't match!");
-        return;
-      }
-
-      // Get token and uid from URL query params
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
-      const uid = params.get('uid');
+      // Get reset parameters
+      const { token, uid } = getResetParams();
 
       if (!token || !uid) {
-        setError('Invalid password reset link');
-        return;
+        throw new Error('Invalid password reset link');
       }
 
       // Submit password reset request
-      await authService.resetPassword(uid, token, password, confirmPassword);
+      await authService.resetPassword(
+        uid,
+        token,
+        formState.password,
+        formState.confirmPassword
+      );
 
-      // Show success message
-      setResetSuccess(true);
-
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        resetState();
-        navigate('/login');
-      }, 3000);
+      // Handle successful reset
+      handleSuccessfulReset();
     } catch (error) {
-      console.error('Password reset error:', error);
-
-      if (error.response && error.response.data) {
-        if (error.response.data.detail) {
-          setError(error.response.data.detail);
-        } else if (error.response.data.password) {
-          setError(error.response.data.password.join(' '));
-        } else {
-          // Combine all error messages
-          const errorMsg = Object.entries(error.response.data)
-            .map(([key, value]) => `${key}: ${value.join(' ')}`)
-            .join('\n');
-
-          setError(errorMsg || 'Failed to reset password');
-        }
-      } else {
-        setError('Network error. Please try again later.');
-      }
+      handleResetError(error);
     } finally {
-      setLoading(false);
+      setFormState((prev) => ({ ...prev, loading: false }));
     }
   };
 
+  // Validate input fields
+  const validateInputs = () => {
+    if (formState.password !== formState.confirmPassword) {
+      setFormState((prev) => ({
+        ...prev,
+        error: "Passwords don't match!",
+      }));
+      return false;
+    }
+    return true;
+  };
+
+  // Handle successful password reset
+  const handleSuccessfulReset = () => {
+    setFormState((prev) => ({ ...prev, resetSuccess: true }));
+
+    // Redirect to login after 3 seconds
+    setTimeout(() => {
+      navigate('/login');
+    }, 3000);
+  };
+
+  // Handle reset error
+  const handleResetError = (error) => {
+    let errorMessage = 'Network error. Please try again later.';
+
+    if (error.response && error.response.data) {
+      if (error.response.data.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response.data.password) {
+        errorMessage = error.response.data.password.join(' ');
+      } else {
+        // Combine all error messages
+        errorMessage =
+          Object.entries(error.response.data)
+            .map(([key, value]) => `${key}: ${value.join(' ')}`)
+            .join('\n') || 'Failed to reset password';
+      }
+    }
+
+    setFormState((prev) => ({ ...prev, error: errorMessage }));
+  };
+
   return (
-    <AuthPageWrapper>
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Reset Your Password</h1>
-          <p className="mt-2 text-gray-600">Please enter your new password below</p>
+   <AuthPageWrapper>
+     <div className="reset-password-container">
+      <div className="reset-password-box">
+        <div className="reset-password-header">
+          <h1>Reset Your Password</h1>
+          <p>Please enter your new password below</p>
         </div>
 
-        {resetSuccess ? (
-          <div className="p-4 bg-green-100 text-green-700 rounded-md">
+        {formState.resetSuccess ? (
+          <div className="reset-success-message">
             <p>Password reset successful! Redirecting to login page...</p>
           </div>
         ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
-            {error && (
-              <div className="p-4 bg-red-100 text-red-700 rounded-md">
-                <p>{error}</p>
-              </div>
+          <form onSubmit={handleResetPassword} className="reset-password-form">
+            {formState.error && (
+              <div className="error-message">{formState.error}</div>
             )}
 
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  New Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="New password"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm New Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Confirm new password"
-                />
-              </div>
+            <div className="form-group">
+              <label htmlFor="password">New Password</label>
+              <input
+                type="password"
+                id="password"
+                value={formState.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                required
+              />
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                  loading ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
-              >
-                {loading ? 'Resetting...' : 'Reset Password'}
-              </button>
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={formState.confirmPassword}
+                onChange={(e) =>
+                  handleInputChange('confirmPassword', e.target.value)
+                }
+                required
+              />
             </div>
 
-            <div className="text-center text-sm">
-              <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Back to login
-              </Link>
-            </div>
+            <button type="submit" disabled={formState.loading}>
+              {formState.loading ? 'Resetting...' : 'Reset Password'}
+            </button>
           </form>
         )}
       </div>
     </div>
-  </AuthPageWrapper>
+   </AuthPageWrapper>
   );
 }
 

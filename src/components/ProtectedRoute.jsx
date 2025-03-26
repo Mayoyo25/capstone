@@ -1,13 +1,16 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import useAuthStore from '../stores/authStore';
-import authService from '../services/authService';
 
 function ProtectedRoute() {
-  const { isAuthenticated } = useAuthStore();
-  const currentUser = authService.getCurrentUser();
+  const { isAuthenticated, user } = useAuthStore();
+  
+  console.log('ProtectedRoute Authentication Check:', {
+    isAuthenticated,
+    userEmail: user?.email
+  });
 
-  if (!isAuthenticated || !currentUser) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

@@ -35,13 +35,6 @@ body.dropdown-open {
   box-shadow: 0 0 0 1px #ff3333;
 }
 
-.error-message {
-  color: #ff3333;
-  font-size: 14px;
-  margin-top: 5px;
-  margin-left: 5px;
-}
-
 .user-type-container {
   position: relative;
   margin-bottom: 20px;

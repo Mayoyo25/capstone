@@ -29,15 +29,6 @@ header {
   font-size: 14px;
 }
 
-.logout-button {
-  background-color: #f05d5e;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 main {
   padding: 30px;
   flex-grow: 1;

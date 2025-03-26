@@ -7,13 +7,13 @@ import UserTypeMenu from './UserTypeMenu';
 import { DownArrow, UpArrow } from './SVGs';
 import authService from '../services/authService';
 import AuthPageWrapper from './AuthPageWrapper';
-import LoginForm from './LoginForm';
+import LoginForm from '../forms/LoginForm';
 
 function Login() {
   const navigate = useNavigate();
 
   // Global state (necessary for login logic)
-  const { user, selectedUserType, isUserMenuOpen, setSelectedUserType, setIsUserMenuOpen, login, resetState } =
+  const { user, selectedUserType, isUserMenuOpen, setSelectedUserType, setIsUserMenuOpen, login } =
     useAuthStore();
 
   // Local state for form inputs
@@ -22,61 +22,74 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(user.rememberMe || false);
   const [error, setError] = useState('');
   const [roleError, setRoleError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
+    console.log('Current User Check:', currentUser);
+
     if (currentUser) {
+      console.log('Redirecting to dashboard due to existing user');
       navigate('/dashboard');
     }
+
+    return () => {
+      console.log('Login Component Unmounting');
+      console.groupEnd();
+    };
   }, [navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  console.log('Before preventDefault'); // Debugging log
+  e.preventDefault();
+  console.log('After preventDefault');
 
-    // Reset previous state
-    resetState();
-    setError('');
+  // Reset previous state
+  setError('');
+  setRoleError('');
+  setLoading(true); // Set loading to true
 
+  try {
     // Validate user type
     if (!VALID_USER_TYPES.includes(selectedUserType)) {
       setRoleError('Please select a role');
+      setLoading(false); // Reset loading state
       return;
     }
 
-    try {
-      // Perform login
-      await authService.login(email, password);
+    // Perform login
+    await authService.login(email, password);
 
-      // Fetch user data
-      const userData = authService.getCurrentUser();
-      const userType = userData?.user_type;
-      const frontendUserType = mapUserTypeToFrontend(userType);
+    // Fetch user data
+    const userData = authService.getCurrentUser();
+    const userType = userData?.user_type;
+    const frontendUserType = mapUserTypeToFrontend(userType);
 
-      // Update login state in the global store
-      login(userData, frontendUserType);
+    // Update login state in the global store
+    login(userData, frontendUserType);
 
-      // Navigate to dashboard
-      navigate('/dashboard');
-    } catch (loginError) {
-      console.error('Login error:', loginError);
+    // Navigate to dashboard
+    navigate('/dashboard');
+  } catch (loginError) {
+    console.error('Login Error:', loginError.message);
 
-      // Detailed error handling
-      let errorMessage = 'Error occurred while logging in. Please try again.';
+    // Detailed error handling
+    let errorMessage = 'Error occurred while logging in. Please try again.';
 
-      if (loginError.response) {
-        if (loginError.response.status === 401) {
-          errorMessage = 'Invalid email or password';
-        } else if (loginError.response.data && loginError.response.data.detail) {
-          errorMessage = loginError.response.data.detail;
-        }
-      } else if (loginError.request) {
-        errorMessage = 'No response from server. Please check your connection.';
-      }
-
-      // Set the error locally
-      setError(errorMessage);
+    if (loginError.message === 'Invalid credentials.') {
+      errorMessage = 'Invalid email or password.';
+    } else if (loginError.message === 'No response from server. Please check your connection.') {
+      errorMessage = 'No response from server. Please check your connection.';
+    } else {
+      errorMessage = 'An unexpected error occurred.';
     }
-  };
+
+    // Set the error locally
+    setError(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleUserTypeSelect = (type) => {
     if (VALID_USER_TYPES.includes(type)) {
@@ -116,6 +129,7 @@ function Login() {
           rememberMe={rememberMe}
           setRememberMe={setRememberMe}
           error={error}
+          loading={loading} // Pass loading state to LoginForm
           navigate={navigate}
         />
       </div>
@@ -124,3 +138,6 @@ function Login() {
 }
 
 export default Login;
+
+
+

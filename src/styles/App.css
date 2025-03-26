@@ -1,14 +1,15 @@
-.app {
-  box-sizing: border-box;
+.primary-color{
+background-color: #4ecdc4;
+color: #333;
 }
-.role-error-temporary {
-  background-color: #720f0f;
-  color: white;
-  font-size: 18px;
-  margin-top: 10px;
+.error-message {
+  color: red;
+  background-color: #ffeeee;
+  border: 1px solid red;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
   text-align: center;
-  border-radius: 12px;
-  padding: 4px;
 }
 .auth-page {
   height: 100vh;
@@ -50,4 +51,13 @@
 @keyframes fadeInBg {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+.logout-button {
+  background-color: #f05d5e;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
 }
