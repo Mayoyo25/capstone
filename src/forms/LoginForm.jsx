@@ -21,7 +21,7 @@ function LoginForm({
         {roleError && <div className="bg-[#720f0f] text-white text-lg mt-2.5 text-center rounded-xl p-1">{roleError}</div>}
 
         {/* General Error */}
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="text-red-500 bg-[#ffeeee] border-[1px] border-red-500 p-2.5 mb-4 rounded-sm">{error}</div>}
 
         <div className="logo">CPMP</div>
         <h2>Login</h2>

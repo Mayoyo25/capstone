@@ -23,7 +23,7 @@ const LandingPage = () => {
           </p>
             <Link 
               to="/register" 
-              className="primary-color p-10"
+              className="bg-[#4ecdc4] text-[#333] p-10"
             >
               Get Started
             </Link>

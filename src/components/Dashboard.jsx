@@ -1,36 +1,28 @@
-import React from 'react';
-import '../styles/Dashboard.css';
-import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../stores/authStore';
-import DashboardUserType from './DashboardUserType';
+import React, { useEffect, useState } from 'react';
+import DashboardTable from './DashboardTable'
+import { temporaryProjects } from '../projects';
 
-function Dashboard() {
-    const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
-  const { email, userType } = user;
+const Dashboard = () => {
+  const [projects, setProjects] = useState([]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  useEffect(()=>{
+    setProjects(temporaryProjects)
+  },[])
+
   return (
-    <div className="dashboard">
-      <header>
-        <div className="logo">CPMP</div>
-        <div className="user-info">
-          <span>{email}</span>
-          <span className="user-type-badge">{userType}</span>
-          <button onClick={handleLogout} className="logout-button">Logout</button>
-        </div>
-      </header>
-      
-      <main>
-        <h1>Welcome to the {userType} Dashboard</h1>
-        <p>This is a placeholder for the {userType.toLowerCase()} dashboard content.</p>
-        {userType && <DashboardUserType userType={userType}/>}
-      </main>
+<div className="flex h-screen w-screen">
+  <div className="bg-green-200 w-[299px]">
+    Left
+  </div>
+  <div className="flex-1 flex flex-col">
+    <div className="bg-rose-800 h-[80px]">Top</div>
+  
+    <div className="flex-grow p-8">
+      <DashboardTable projects={projects}/>
     </div>
+  </div>
+</div>
   );
-}
+};
 
 export default Dashboard;

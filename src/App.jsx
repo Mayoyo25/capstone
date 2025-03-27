@@ -40,6 +40,9 @@ function App() {
 
         {/* Default Redirect */}
         <Route path="*" element={<LandingPage />} />
+
+        {/* For Development*/}
+        <Route path="/test" element={<Dashboard />} />
       </Routes>
     </Router>
   );

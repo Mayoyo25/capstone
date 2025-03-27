@@ -34,7 +34,7 @@ function RegisterForm({
         <div className="logo">CPMP</div>
         <h2>Register</h2>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="text-red-500 bg-[#ffeeee] border-[1px] border-red-500 p-2.5 mb-4 rounded-sm">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">

@@ -1,0 +1,15 @@
+export const temporaryProjects = [
+    { id: 'A', name: 'Project A', status: 'In Progress', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'B', name: 'Project B', status: 'Complete', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'C', name: 'Project C', status: 'Published', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'D', name: 'Project D', status: 'Overdue', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'E', name: 'Project E', status: 'In Progress', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'F', name: 'Project F', status: 'Complete', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'G', name: 'Project G', status: 'Published', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'H', name: 'Project H', status: 'In Progress', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'I', name: 'Project I', status: 'Published', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'J', name: 'Project J', status: 'Overdue', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'K', name: 'Project K', status: 'Published', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'L', name: 'Project L', status: 'In Progress', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+    { id: 'M', name: 'Project M', status: 'In Progress', assignedTo: 'John Doe', startDate: '11/11/24', endDate: '12/12/24' },
+  ]

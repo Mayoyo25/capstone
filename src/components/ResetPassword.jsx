@@ -122,13 +122,13 @@ function ResetPassword() {
         </div>
 
         {formState.resetSuccess ? (
-          <div className="reset-success-message">
+          <div className="p-4 bg-[#d4edda] text-[#155724] border-[1px] border-[#c3e6cb] rounded-sm text-center">
             <p>Password reset successful! Redirecting to login page...</p>
           </div>
         ) : (
           <form onSubmit={handleResetPassword} className="reset-password-form">
             {formState.error && (
-              <div className="error-message">{formState.error}</div>
+              <div className="text-red-500 bg-[#ffeeee] border-[1px] border-red-500 p-2.5 mb-4 rounded-sm">{formState.error}</div>
             )}
 
             <div className="form-group">

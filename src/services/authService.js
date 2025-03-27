@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/';
+const API_URL = 'https://capstone-api-issr.onrender.com/api/';
 
 // Create axios instance with appropriate headers
 const axiosInstance = axios.create({
