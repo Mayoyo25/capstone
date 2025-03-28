@@ -1,5 +1,6 @@
 import React from 'react';
 import useAuthStore from '../stores/authStore';
+import LogoutButton from '../components/LogoutButton';
 
 const HomePage = () => {
   const { user, logout } = useAuthStore();
