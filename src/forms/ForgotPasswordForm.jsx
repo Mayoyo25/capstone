@@ -16,6 +16,7 @@ function ForgotPasswordForm({
           value={email}
           onChange={(e) => onInputChange('email', e.target.value)}
           placeholder="Email Address"
+          className="text-gray-900"
           required
         />
       </div>

@@ -137,6 +137,7 @@ function ResetPassword() {
                 type="password"
                 id="password"
                 value={formState.password}
+                className='text-gray-900'
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 required
               />
@@ -151,6 +152,7 @@ function ResetPassword() {
                 onChange={(e) =>
                   handleInputChange('confirmPassword', e.target.value)
                 }
+                className='text-gray-900'
                 required
               />
             </div>

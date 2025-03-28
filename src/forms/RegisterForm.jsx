@@ -43,6 +43,7 @@ function RegisterForm({
               value={fullName}
               onChange={(e) => updateFormField('fullName', e.target.value)}
               placeholder="Full Name"
+              className='text-gray-900'
               required
             />
           </div>
@@ -52,6 +53,7 @@ function RegisterForm({
               value={email}
               onChange={(e) => updateFormField('email', e.target.value)}
               placeholder="Email Address"
+              className='text-gray-900'
               required
             />
           </div>
@@ -61,6 +63,7 @@ function RegisterForm({
               value={password}
               onChange={(e) => updateFormField('password', e.target.value)}
               placeholder="Password"
+              className='text-gray-900'
               required
             />
           </div>
@@ -70,6 +73,7 @@ function RegisterForm({
               value={confirmPassword}
               onChange={(e) => updateFormField('confirmPassword', e.target.value)}
               placeholder="Confirm Password"
+              className='text-gray-900'
               required
             />
           </div>

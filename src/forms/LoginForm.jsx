@@ -30,6 +30,7 @@ function LoginForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
+              className="text-gray-900"
               required
               disabled={loading}
             />
@@ -40,6 +41,7 @@ function LoginForm({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              className="text-gray-900"
               required
               disabled={loading}
             />
@@ -52,6 +54,7 @@ function LoginForm({
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={() => setRememberMe(!rememberMe)}
+                className="text-gray-900"
                 disabled={loading}
               />
               <label htmlFor="rememberMe">Remember Me</label>
