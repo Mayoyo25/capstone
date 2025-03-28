@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../stores/authStore';
-import { VALID_USER_TYPES, mapUserTypeToFrontend } from '../utils/userTypeUtils';
 import '../styles/Login.css';
-import UserTypeMenu from './UserTypeMenu';
-import { DownArrow, UpArrow } from './SVGs';
 import authService from '../services/authService';
 import AuthPageWrapper from './AuthPageWrapper';
 import LoginForm from '../forms/LoginForm';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { VALID_USER_TYPES, mapUserTypeToFrontend } from '../utils/userTypeUtils';
+
 
 function Login() {
   const navigate = useNavigate();
 
   // Global state (necessary for login logic)
-  const { user, selectedUserType, isUserMenuOpen, setSelectedUserType, setIsUserMenuOpen, login } =
-    useAuthStore();
+  const { user,  login } = useAuthStore();
 
   // Local state for form inputs
   const [email, setEmail] = useState(user.email || '');
@@ -23,6 +22,7 @@ function Login() {
   const [error, setError] = useState('');
   const [roleError, setRoleError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('Select Role');
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
@@ -40,23 +40,21 @@ function Login() {
   }, [navigate]);
 
 const handleSubmit = async (e) => {
-  console.log('Before preventDefault'); // Debugging log
   e.preventDefault();
-  console.log('After preventDefault');
 
   // Reset previous state
   setError('');
   setRoleError('');
+  
+  // Validate role selection
+  if (selectedRole === 'Select Role') {
+    setRoleError('Please select a role');
+    return;
+  }
+
   setLoading(true); // Set loading to true
 
   try {
-    // Validate user type
-    if (!VALID_USER_TYPES.includes(selectedUserType)) {
-      setRoleError('Please select a role');
-      setLoading(false); // Reset loading state
-      return;
-    }
-
     // Perform login
     await authService.login(email, password);
 
@@ -64,6 +62,11 @@ const handleSubmit = async (e) => {
     const userData = authService.getCurrentUser();
     const userType = userData?.user_type;
     const frontendUserType = mapUserTypeToFrontend(userType);
+
+    // Verify the selected role matches the user's actual role
+    if (selectedRole !== frontendUserType) {
+      throw new Error("You don't have permission to access this role");
+    }
 
     // Update login state in the global store
     login(userData, frontendUserType);
@@ -80,6 +83,8 @@ const handleSubmit = async (e) => {
       errorMessage = 'Invalid email or password.';
     } else if (loginError.message === 'No response from server. Please check your connection.') {
       errorMessage = 'No response from server. Please check your connection.';
+    } else if (loginError.message === "You don't have permission to access this role") {
+      errorMessage = loginError.message;
     } else {
       errorMessage = 'An unexpected error occurred.';
     }
@@ -90,35 +95,34 @@ const handleSubmit = async (e) => {
     setLoading(false);
   }
 };
-
-  const handleUserTypeSelect = (type) => {
+const handleSelect = (type) => {
     if (VALID_USER_TYPES.includes(type)) {
-      setSelectedUserType(type);
+      setSelectedRole(mapUserTypeToFrontend(type));
     }
-    setIsUserMenuOpen(false);
   };
 
   return (
     <AuthPageWrapper>
-      <div className="login-wrapper">
-        <div className="roles-parent">
-          <div className="user-type-container">
-            <button
-              type="button"
-              className="user-type-button"
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            >
-              {selectedUserType}
-              {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
-            </button>
-            {isUserMenuOpen && (
-              <UserTypeMenu
-                onSelect={handleUserTypeSelect}
-                closeMenu={() => setIsUserMenuOpen(false)}
-              />
-            )}
+      <div className="fixed top-6 right-6 z-50 group">
+        <div className="dropdown dropdown-hover dropdown-end">
+          <div tabIndex={0} className="btn rounded-lg m-1 flex items-center gap-2">
+            {selectedRole}
+            <ChevronDown className="group-hover:hidden" size={18} />
+            <ChevronUp className="hidden group-hover:inline-block" size={18} />
           </div>
+          
+          <ul className="dropdown-content menu bg-base-100 rounded-box w-52 shadow">
+            {VALID_USER_TYPES.map((type) => (
+              <li key={type} onClick={() => handleSelect(type)}>
+                <a className="hover:bg-gray-100 active:bg-gray-200">
+                  {mapUserTypeToFrontend(type)}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
+      </div>
+      <div className="w-full h-full">
         <LoginForm
           roleError={roleError}
           handleSubmit={handleSubmit}
@@ -129,7 +133,7 @@ const handleSubmit = async (e) => {
           rememberMe={rememberMe}
           setRememberMe={setRememberMe}
           error={error}
-          loading={loading} // Pass loading state to LoginForm
+          loading={loading}
           navigate={navigate}
         />
       </div>
@@ -138,6 +142,3 @@ const handleSubmit = async (e) => {
 }
 
 export default Login;
-
-
-

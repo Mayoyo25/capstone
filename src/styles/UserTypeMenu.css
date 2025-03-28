@@ -38,6 +38,7 @@ body.dropdown-open {
 .user-type-container {
   position: relative;
   margin-bottom: 20px;
+  outline:2px solid #ff3333;
 }
 
 .user-type-menu {

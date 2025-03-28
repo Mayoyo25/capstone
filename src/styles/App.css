@@ -7,15 +7,6 @@
   background-size: cover;
   background-position: center;
 }
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  background-color: #b9b4b4;
-}
 
 .auth-page::before {
   content: "";

@@ -1,8 +1,8 @@
 import React from 'react';
 import AuthContainer from '../components/AuthFormContainer';
 import UserTypeMenu from '../components/UserTypeMenu';
-import { DownArrow, UpArrow } from '../components/SVGs';
 import { VALID_USER_TYPES } from '../utils/userTypeUtils';
+import { ChevronUp ,ChevronDown} from 'lucide-react';
 
 function RegisterForm({
   formState,
@@ -81,7 +81,7 @@ function RegisterForm({
               onClick={() => updateUiState('isUserMenuOpen', !isUserMenuOpen)}
             >
               {selectedUserType}
-              {isUserMenuOpen ? <UpArrow /> : <DownArrow />}
+              {isUserMenuOpen ? <ChevronUp /> : <ChevronDown />}
             </button>
 
             {roleError && <div className="role-error">{roleError}</div>}

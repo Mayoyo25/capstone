@@ -12,21 +12,18 @@ function LoginForm({
   setRememberMe,
   navigate,
   error,
-  loading, // Add loading prop
+  loading,
 }) {
   return (
     <AuthContainer>
       <div className="login-card">
-        {/* Role Error */}
         {roleError && <div className="bg-[#720f0f] text-white text-lg mt-2.5 text-center rounded-xl p-1">{roleError}</div>}
 
-        {/* General Error */}
         {error && <div className="text-red-500 bg-[#ffeeee] border-[1px] border-red-500 p-2.5 mb-4 rounded-sm">{error}</div>}
 
         <div className="logo">CPMP</div>
         <h2>Login</h2>
         <form onSubmit={handleSubmit}>
-          {/* Email Input */}
           <div className="input-group">
             <input
               type="email"
@@ -34,11 +31,9 @@ function LoginForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
               required
-              disabled={loading} // Disable input during loading
+              disabled={loading}
             />
           </div>
-
-          {/* Password Input */}
           <div className="input-group">
             <input
               type="password"
@@ -46,50 +41,44 @@ function LoginForm({
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               required
-              disabled={loading} // Disable input during loading
+              disabled={loading}
             />
           </div>
 
-          {/* Options Row */}
           <div className="options-row">
-            {/* Remember Me Checkbox */}
             <div className="remember-me">
               <input
                 type="checkbox"
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={() => setRememberMe(!rememberMe)}
-                disabled={loading} // Disable checkbox during loading
+                disabled={loading}
               />
               <label htmlFor="rememberMe">Remember Me</label>
             </div>
-
-            {/* Forgot Password Button */}
             <button
               type="button"
               className="text-button"
               onClick={() => navigate("/forgot-password")}
-              disabled={loading} // Disable button during loading
+              disabled={loading}
             >
               Forgot Password?
             </button>
           </div>
 
-          {/* Sign In Button */}
           <button
             type="submit"
             className="sign-in-button"
-            disabled={loading} // Disable button during loading
+            disabled={loading}
           >
-            {loading ? "Signing In..." : "Sign In"} {/* Show loading text */}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
 
-          {/* Sign Up Button */}
           <button
             type="button"
             className="sign-up-button"
             onClick={() => navigate("/register")}
-            disabled={loading} // Disable button during loading
+            disabled={loading}
           >
             Sign Up
           </button>

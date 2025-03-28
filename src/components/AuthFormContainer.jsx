@@ -1,8 +1,7 @@
-import '../styles/AuthContainer.css';
 function AuthContainer({children}) {
   
   return (
-    <div className="auth-container">
+    <div className="w-full max-w-sm mx-auto">
     {children}
     </div>
   );

@@ -5,8 +5,8 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
-import LandingPage from './pages/LandingPage';
-import HomePage from './pages/HomePage';
+import LandingPage from './components/LandingPage';
+import HomePage from './components/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/App.css';
 import useAuthStore from './stores/authStore';
@@ -25,9 +25,8 @@ function App() {
         {/* Root Path Conditional Rendering */}
         <Route 
           path="/" 
-          element={isAuthenticated ? <HomePage /> : <LandingPage />} 
+          element={isAuthenticated ? <HomePage /> : <LandingPage />}
         />
-
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
