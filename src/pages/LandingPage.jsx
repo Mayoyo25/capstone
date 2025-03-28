@@ -6,7 +6,7 @@ const LandingPage = () => {
     <div className="min-h-screen flex flex-col">
       {/* Navbar */}
       <nav className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <div className="text-2xl font-bold tracking-tight">YourApp</div>
+        <div className="text-2xl font-bold tracking-tight">Capstone</div>
         <Link to="/login" className="text-sm font-medium hover:text-gray-700 transition-colors">
           Login
         </Link>

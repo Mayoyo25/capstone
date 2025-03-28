@@ -19,11 +19,9 @@ const useAuthStore = create(
 
       // Simplified initialization method
       initializeAuth: () => {
-        console.log('Initializing authentication state...'); 
         const currentUser = authService.getCurrentUser();
 
         if (currentUser) {
-          console.log('Existing user found:', currentUser);
           set({
             isAuthenticated: true,
             user: {
@@ -35,7 +33,6 @@ const useAuthStore = create(
             error: null,
           });
         } else {
-          console.log('No current user found.');
           set({
             isAuthenticated: false,
             user: {
@@ -53,7 +50,6 @@ const useAuthStore = create(
       setIsUserMenuOpen: (isOpen) => set({ isUserMenuOpen: isOpen }),
 
       login: (userData, userType) => {
-        console.log('Login action triggered:', { userData, userType });
         set({
           isAuthenticated: true,
           user: { 
@@ -67,7 +63,6 @@ const useAuthStore = create(
       },
 
       logout: () => {
-        console.log('Logout action triggered');
         authService.logout();
         set({
           isAuthenticated: false,

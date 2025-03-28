@@ -1,28 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import DashboardTable from './DashboardTable'
-import { temporaryProjects } from '../projects';
+import { useRef } from 'react';
+import DashboardTable from './DashboardTable';
+import { temporaryProjects } from '../testProjects';
 
-const Dashboard = () => {
-  const [projects, setProjects] = useState([]);
-
-  useEffect(()=>{
-    setProjects(temporaryProjects)
-  },[])
+export const ProjectStatusBadge = ({ status }) => {
+  const statusColors = {
+    'In Progress': 'bg-yellow-100 text-yellow-800',
+    'Complete': 'bg-green-100 text-green-800',
+    'Published': 'bg-green-100 text-green-800',
+    'Overdue': 'bg-red-100 text-red-800'
+  };
 
   return (
-<div className="flex h-screen w-screen">
-  <div className="bg-green-200 w-[299px]">
-    Left
-  </div>
-  <div className="flex-1 flex flex-col">
-    <div className="bg-rose-800 h-[80px]">Top</div>
-  
-    <div className="flex-grow p-8">
-      <DashboardTable projects={projects}/>
-    </div>
-  </div>
-</div>
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
+      {status}
+    </span>
   );
 };
 
-export default Dashboard;
+
+function TestPage() {
+  const tableContainerRef = useRef(null);
+
+  return (
+    <main className="grid grid-cols-[299px_1fr] w-screen h-screen overflow-hidden bg-teal-100">
+      <div className="bg-rose-700">Left</div>
+      <section className="grid grid-rows-[80px_1fr] overflow-hidden">
+        <div className="bg-amber-400">Top</div>
+        <div className="w-full h-full p-5 flex flex-col overflow-hidden">
+          {/* Scrollable container with stable layout */}
+          <div 
+            ref={tableContainerRef}
+            className="flex-1 min-h-0 rounded-lg custom-relative-for-scrollbar overflow-hidden hover:overflow-y-auto bg-white"
+          >
+            <div className="custom-absolute-for-scrollbar inset-0 overflow-y-hidden hover:overflow-y-auto">
+             <DashboardTable projects={temporaryProjects}/>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+export default TestPage;

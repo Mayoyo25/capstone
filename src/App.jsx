@@ -10,6 +10,7 @@ import HomePage from './pages/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/App.css';
 import useAuthStore from './stores/authStore';
+import TestPage from './TestPage'
 
 function App() {
   const { isAuthenticated, initializeAuth } = useAuthStore();
@@ -42,7 +43,7 @@ function App() {
         <Route path="*" element={<LandingPage />} />
 
         {/* For Development*/}
-        <Route path="/test" element={<Dashboard />} />
+        <Route path="/test" element={<TestPage />} />
       </Routes>
     </Router>
   );
