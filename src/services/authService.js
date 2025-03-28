@@ -5,7 +5,7 @@ const API_URL = 'https://capstone-api-issr.onrender.com/api/';
 // Create axios instance with appropriate headers
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    timeout:10000,
+    // timeout:10000,
     headers: {
         'Content-Type': 'application/json',
     },
