@@ -8,7 +8,7 @@ import {
 import DashboardTable from './DashboardTable';
 import DashboardTop from './DashboardTop';
 import { temporaryProjects } from '../testProjects';
-import ClientNewProjectModal from './CLientNewProjectModal';
+import ClientNewProjectModal from './ClientNewProjectModal';
 import { VALID_USER_TYPES } from '../utils/userTypeUtils';
 
 export const ProjectStatusBadge = ({ status }) => {
