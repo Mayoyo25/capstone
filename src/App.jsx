@@ -10,7 +10,8 @@ import HomePage from './components/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/App.css';
 import useAuthStore from './stores/authStore';
-import TestPage from './TestPage'
+import TestPage from './TestPage';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const { isAuthenticated, initializeAuth } = useAuthStore();
@@ -21,28 +22,29 @@ function App() {
 
   return (
     <Router>
+      <Toaster position='top-center' />
       <Routes>
         {/* Root Path Conditional Rendering */}
-        <Route 
-          path="/" 
+        <Route
+          path='/'
           element={isAuthenticated ? <HomePage /> : <LandingPage />}
         />
         {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path='/dashboard' element={<Dashboard />} />
         </Route>
 
         {/* Default Redirect */}
-        <Route path="*" element={<LandingPage />} />
+        <Route path='*' element={<LandingPage />} />
 
         {/* For Development*/}
-        <Route path="/test" element={<TestPage />} />
+        <Route path='/test' element={<TestPage />} />
       </Routes>
     </Router>
   );
