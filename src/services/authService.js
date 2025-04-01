@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import axiosInstance from './axiosConfig';
 
@@ -99,7 +98,7 @@ const refreshAccessToken = async () => {
   }
 
   try {
-    const response = await axios.post('/api/user/token/refresh/', {
+    const response = await authService.post('/user/token/refresh/', {
       refresh: refreshToken,
     });
 
@@ -132,7 +131,7 @@ const handleApiError = (error) => {
 // Authentication service functions
 const register = async (userData) => {
   try {
-    const response = await axiosInstance.post('user/register/', userData);
+    const response = await axiosInstance.post('/user/register/', userData);
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -141,7 +140,7 @@ const register = async (userData) => {
 
 const login = async (email, password) => {
   try {
-    const response = await axiosInstance.post('user/token/', {
+    const response = await axiosInstance.post('/user/token/', {
       email,
       password,
     });
@@ -193,7 +192,7 @@ const getCurrentUser = () => {
 
 const forgotPassword = async (email) => {
   try {
-    const response = await axiosInstance.post('user/password-reset/', {
+    const response = await axiosInstance.post('/user/password-reset/', {
       email,
     });
     return response.data;
@@ -204,7 +203,7 @@ const forgotPassword = async (email) => {
 
 const resetPassword = async (uidb64, token, password, password2) => {
   try {
-    const response = await axiosInstance.post('user/password-reset-confirm/', {
+    const response = await axiosInstance.post('/user/password-reset-confirm/', {
       uidb64,
       token,
       password,
