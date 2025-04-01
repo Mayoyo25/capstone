@@ -4,7 +4,8 @@ import { toast } from 'react-hot-toast';
 import authService from '../services/authService';
 
 // API Base URL
-const API_URL = import.meta.env.API_URL;
+const API_URL =
+  import.meta.env.VITE_API_URL || 'https://capstone-api-issr.onrender.com/api';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
