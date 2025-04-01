@@ -8,6 +8,19 @@ import authService from '../services/authService';
 
 function Register() {
   const navigate = useNavigate();
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
+
+  useEffect(() => {
+    if (initialCheckDone) return;
+
+    const currentUser = authService.getCurrentUser();
+
+    if (currentUser) {
+      navigate('/dashboard', { replace: true });
+    }
+
+    setInitialCheckDone(true);
+  }, [navigate, initialCheckDone]);
 
   // Form state
   const [formState, setFormState] = useState({
@@ -35,7 +48,7 @@ function Register() {
       confirmPassword: '',
       selectedUserType: 'Select Role',
     });
-    setUiState(prevState => ({
+    setUiState((prevState) => ({
       ...prevState,
       loading: false,
       error: '',
@@ -53,7 +66,7 @@ function Register() {
     }
 
     if (!VALID_USER_TYPES.includes(selectedUserType)) {
-      setUiState(prevState => ({
+      setUiState((prevState) => ({
         ...prevState,
         roleError: 'Please select a valid role',
       }));
@@ -65,8 +78,9 @@ function Register() {
 
   // Prepare user data for registration
   const prepareUserData = () => {
-    const { fullName, email, password, confirmPassword, selectedUserType } = formState;
-    
+    const { fullName, email, password, confirmPassword, selectedUserType } =
+      formState;
+
     const nameParts = fullName.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
@@ -86,17 +100,17 @@ function Register() {
   // Handle registration logic
   const register = async () => {
     try {
-      setUiState(prevState => ({ ...prevState, loading: true, error: '' }));
-      
+      setUiState((prevState) => ({ ...prevState, loading: true, error: '' }));
+
       const userData = prepareUserData();
       await authService.register(userData);
-      
+
       resetState();
       navigate('/login');
     } catch (error) {
       handleRegistrationError(error);
     } finally {
-      setUiState(prevState => ({ ...prevState, loading: false }));
+      setUiState((prevState) => ({ ...prevState, loading: false }));
     }
   };
 
@@ -106,7 +120,7 @@ function Register() {
 
     if (error.response && error.response.data) {
       const errorData = error.response.data;
-      
+
       if (typeof errorData === 'string') {
         errorMsg = errorData;
       } else if (typeof errorData === 'object') {
@@ -118,17 +132,17 @@ function Register() {
       errorMsg = 'Network error. Please try again later.';
     }
 
-    setUiState(prevState => ({ ...prevState, error: errorMsg }));
+    setUiState((prevState) => ({ ...prevState, error: errorMsg }));
   };
 
   // Update form inputs
   const updateFormField = (field, value) => {
-    setFormState(prevState => ({ ...prevState, [field]: value }));
+    setFormState((prevState) => ({ ...prevState, [field]: value }));
   };
 
   // Update UI state
   const updateUiState = (field, value) => {
-    setUiState(prevState => ({ ...prevState, [field]: value }));
+    setUiState((prevState) => ({ ...prevState, [field]: value }));
   };
 
   // Handle form submission
@@ -150,7 +164,10 @@ function Register() {
 
   // Clear role error when a valid role is selected
   useEffect(() => {
-    if (uiState.roleError && VALID_USER_TYPES.includes(formState.selectedUserType)) {
+    if (
+      uiState.roleError &&
+      VALID_USER_TYPES.includes(formState.selectedUserType)
+    ) {
       updateUiState('roleError', '');
     }
   }, [formState.selectedUserType, uiState.roleError]);

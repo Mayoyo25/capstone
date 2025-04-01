@@ -2,34 +2,26 @@ import axiosInstance from './axiosConfig';
 
 export const createProject = async (formData) => {
   try {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('access-token');
 
-    const response = await fetch('/projects/', {
-      method: 'POST',
+    const response = await axiosInstance.post(`/projects/`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      body: formData,
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create project');
-    }
-
-    const projectData = await response.json();
-
     // Handle file URLs - they'll be in projectData.files[].file_url
-    return projectData;
+    return response.data;
   } catch (error) {
-    throw error;
+    console.log(error);
+    throw error.response?.data || error.message;
   }
 };
 
 // To download a file
 export const downloadFile = async (fileId, fileName) => {
   try {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('access-token');
 
     const response = await fetch(`/files/${fileId}/`, {
       headers: {
@@ -58,7 +50,7 @@ export const downloadFile = async (fileId, fileName) => {
 
 export const getProjects = async (params = {}) => {
   try {
-    const response = await axiosInstance.get('/projects/', { params });
+    const response = await axiosInstance.get('/projects/list/', { params });
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

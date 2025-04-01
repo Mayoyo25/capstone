@@ -6,6 +6,7 @@ import ModalContainer from './ModalContainer';
 import { createProject } from '../services/projects';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import useAuthStore from '../stores/authStore';
 
 const CustomDateInput = React.forwardRef(
   ({ value, onClick, onChange, placeholder, errors }, ref) => (
@@ -41,17 +42,19 @@ const CustomDateInput = React.forwardRef(
   )
 );
 
-const ClientNewProjectModal = ({ isOpen, onClose, userType }) => {
+const ClientNewProjectModal = ({ isOpen, onClose }) => {
+  const {
+    userData: { user_type },
+  } = useAuthStore();
+
   const {
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
       projectName: '',
-      deadline: '',
       description: '',
       field: '',
       categories: '',
@@ -84,16 +87,12 @@ const ClientNewProjectModal = ({ isOpen, onClose, userType }) => {
   const onFormSubmit = async (data) => {
     try {
       const formData = new FormData();
-      formData.append('user_type', userType);
+      formData.append('user_type', user_type);
+      formData.append('title', data.projectName);
+      formData.append('description', data.description);
+      formData.append('field', data.field);
+      formData.append('categories', data.categories);
 
-      // Append all form fields
-      for (const key in data) {
-        if (data[key]) {
-          formData.append(key, data[key]);
-        }
-      }
-
-      // Append deadline separately
       if (selectedDate) {
         formData.append(
           'deadline',
@@ -101,17 +100,7 @@ const ClientNewProjectModal = ({ isOpen, onClose, userType }) => {
         );
       }
 
-      // Append files
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
-
-      // For debugging - log the actual form data contents
-      for (const [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-
-      return;
+      files.forEach((file) => formData.append('files', file));
 
       await createProject(formData);
       toast.success('Project created successfully!');
@@ -196,10 +185,10 @@ const ClientNewProjectModal = ({ isOpen, onClose, userType }) => {
               selected={selectedDate}
               onChange={(date) => {
                 setSelectedDate(date);
-                setValue('deadline', date?.toISOString() || '');
               }}
-              placeholderText='DD/MM/YYYY'
-              dateFormat='dd/MM/yyyy'
+              placeholderText='YYYY/MM/DD'
+              dateFormat='yyyy/MM/dd'
+              minDate={new Date()} // This prevents selecting past dates
               customInput={<CustomDateInput errors={errors} />}
               className={`w-full p-2 border ${
                 errors.deadline ? 'border-red-500' : 'border-gray-300'

@@ -1,23 +1,12 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-
-const API_URL = 'https://capstone-api-issr.onrender.com/users/';
-
-// Create axios instance with appropriate headers
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-});
+import axiosInstance from './axiosConfig';
 
 // Helper function to retrieve access token from cookies
 const getAccessToken = () => {
   const cookie = document.cookie
     .split('; ')
-    .find((row) => row.startsWith('access_token='));
+    .find((row) => row.startsWith('access-token='));
   return cookie ? cookie.split('=')[1] : null;
 };
 
@@ -25,7 +14,7 @@ const getAccessToken = () => {
 const getRefreshToken = () => {
   const cookie = document.cookie
     .split('; ')
-    .find((row) => row.startsWith('refresh_token='));
+    .find((row) => row.startsWith('refresh-token='));
   return cookie ? cookie.split('=')[1] : null;
 };
 
@@ -103,20 +92,21 @@ axiosInstance.interceptors.response.use(
 
 // Helper function to refresh the access token
 const refreshAccessToken = async () => {
-  const refreshToken = getRefreshToken();
+  const refreshToken = localStorage.getItem('refresh-token');
   if (!refreshToken) {
     logout();
     throw new Error('No refresh token available.');
   }
 
   try {
-    const response = await axios.post(`${API_URL}token/refresh/`, {
+    const response = await axios.post('/api/user/token/refresh/', {
       refresh: refreshToken,
     });
+
     const newAccessToken = response.data.access;
 
-    // Update the access token cookie
-    document.cookie = `access_token=${newAccessToken}; HttpOnly; Secure; SameSite=Strict`;
+    // Store new access token
+    localStorage.setItem('access-token', newAccessToken);
 
     return newAccessToken;
   } catch (error) {
@@ -142,7 +132,7 @@ const handleApiError = (error) => {
 // Authentication service functions
 const register = async (userData) => {
   try {
-    const response = await axiosInstance.post('register/', userData);
+    const response = await axiosInstance.post('user/register/', userData);
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -151,10 +141,17 @@ const register = async (userData) => {
 
 const login = async (email, password) => {
   try {
-    const response = await axiosInstance.post('token/', { email, password });
+    const response = await axiosInstance.post('user/token/', {
+      email,
+      password,
+    });
 
-    // Parse user info from the access token
-    const userInfo = parseJwt(getAccessToken());
+    // Store tokens securely
+    localStorage.setItem('access-token', response.data.access);
+    localStorage.setItem('refresh-token', response.data.refresh);
+
+    // Decode user info from token
+    const userInfo = jwtDecode(response.data.access);
     localStorage.setItem('user', JSON.stringify(userInfo));
 
     return response.data;
@@ -175,21 +172,30 @@ const login = async (email, password) => {
 };
 
 const logout = () => {
-  // Clear local storage
+  localStorage.removeItem('access-token');
+  localStorage.removeItem('refresh-token');
+  localStorage.removeItem('auth-storage');
   localStorage.removeItem('user');
-
-  // Redirect to login page
-  window.location.href = '/login';
+  window.location.href = '/';
 };
 
 const getCurrentUser = () => {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+  const token = localStorage.getItem('access-token');
+  if (!token) return null;
+
+  try {
+    return jwtDecode(token);
+  } catch (e) {
+    console.error('Invalid token:', e);
+    return null;
+  }
 };
 
 const forgotPassword = async (email) => {
   try {
-    const response = await axiosInstance.post('password-reset/', { email });
+    const response = await axiosInstance.post('user/password-reset/', {
+      email,
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -198,7 +204,7 @@ const forgotPassword = async (email) => {
 
 const resetPassword = async (uidb64, token, password, password2) => {
   try {
-    const response = await axiosInstance.post('password-reset-confirm/', {
+    const response = await axiosInstance.post('user/password-reset-confirm/', {
       uidb64,
       token,
       password,
@@ -210,15 +216,6 @@ const resetPassword = async (uidb64, token, password, password2) => {
   }
 };
 
-// Helper function to parse JWT token
-const parseJwt = (token) => {
-  try {
-    return jwtDecode(token);
-  } catch (e) {
-    return null;
-  }
-};
-
 const authService = {
   register,
   login,
@@ -227,6 +224,10 @@ const authService = {
   forgotPassword,
   resetPassword,
   axiosInstance,
+  getAccessToken,
+  getRefreshToken,
+  getCsrfToken,
+  refreshAccessToken,
 };
 
 export default authService;
