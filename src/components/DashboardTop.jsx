@@ -1,13 +1,16 @@
 import { Bell, Settings } from 'lucide-react';
-function DashboardTop({ openNewProjectModal }) {
+function DashboardTop({ openNewProjectModal, userType }) {
   return (
     <section className='flex justify-between items-center px-5 mt-2 text-gray-600'>
       <div className='w-full h-full'>
-        <p className='text-gray-500'>
+        <p className='text-gray-700 flex gap-10'>
           {' '}
-          CLient <span className='text-gray-700'> /Dashboard</span>{' '}
+          <span className='text-gray-500'>
+            {userType.charAt(0).toUpperCase() + userType.slice(1).toLowerCase()}
+          </span>
+          /Dashboard
         </p>
-        <p className='text-lg font-bold text-gray-700'>Supervisor</p>
+        <p className='text-lg font-bold text-gray-700'>Dashboard</p>
       </div>
       <div className='flex items-center justify-end px-4 gap-4 w-full h-full '>
         <label className='input'>

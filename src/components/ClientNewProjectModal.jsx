@@ -6,7 +6,6 @@ import ModalContainer from './ModalContainer';
 import { createProject } from '../services/projects';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import useAuthStore from '../stores/authStore';
 
 const CustomDateInput = React.forwardRef(
   ({ value, onClick, onChange, placeholder, errors }, ref) => (
@@ -42,11 +41,7 @@ const CustomDateInput = React.forwardRef(
   )
 );
 
-const ClientNewProjectModal = ({ isOpen, onClose }) => {
-  const {
-    userData: { user_type },
-  } = useAuthStore();
-
+const ClientNewProjectModal = ({ isOpen, onClose, user_type }) => {
   const {
     register,
     handleSubmit,
