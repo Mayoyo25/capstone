@@ -1,50 +1,15 @@
-import { useState } from 'react';
 import {
-  LogOut,
   House,
   ChartBar,
   Users,
   FileText,
   Mail,
-  CheckCircle,
   User,
   Clock,
   Bookmark,
 } from 'lucide-react';
-import DashboardTable from './DynamicTable';
-import DashboardTop from './DashboardTop';
-import useAuthStore from '../stores/authStore';
-import ClientNewProjectModal from './ClientNewProjectModal';
-import { sampleData } from '../data.js';
 
-// Placeholder components for non-table views
-const AdminDashboard = () => (
-  <div className='p-4 grid grid-cols-1 md:grid-cols-3 gap-4'>
-    <div className='bg-blue-50 p-4 rounded-lg'>System Analytics</div>
-    <div className='bg-green-50 p-4 rounded-lg'>User Statistics</div>
-    <div className='bg-purple-50 p-4 rounded-lg'>Recent Activity</div>
-  </div>
-);
-
-const StudentDashboard = () => (
-  <div className='p-4 grid grid-cols-1 md:grid-cols-2 gap-4'>
-    <div className='bg-blue-50 p-4 rounded-lg'>My Projects</div>
-    <div className='bg-green-50 p-4 rounded-lg'>Upcoming Deadlines</div>
-  </div>
-);
-
-const StudentMail = () => (
-  <div className='p-4 space-y-2'>
-    {[1, 2, 3].map((i) => (
-      <div key={i} className='bg-white p-3 rounded-lg shadow'>
-        Message {i}
-      </div>
-    ))}
-  </div>
-);
-
-// Complete configuration matching your exact requirements
-const userDashboardConfig = {
+export const userDashboardConfig = {
   ADMIN: {
     navItems: [
       {
@@ -228,87 +193,3 @@ const userDashboardConfig = {
     showNewProjectButton: false,
   },
 };
-
-const DashboardComponent = ({ userType = 'STUDENT' }) => {
-  const [activePage, setActivePage] = useState(1);
-  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
-  const { logout } = useAuthStore();
-
-  // Safely get configuration
-  const config = userDashboardConfig[userType] || userDashboardConfig.STUDENT;
-  const navItems = config.navItems;
-  const activeNavItem =
-    navItems.find((item) => item.id === activePage) || navItems[0];
-
-  const renderContent = () => {
-    if (activeNavItem.hasTable === false) {
-      return activeNavItem.component;
-    }
-
-    // Get data for the current view
-    const viewData = sampleData[userType]?.[activeNavItem.label] || [];
-
-    return (
-      <div className='p-4'>
-        <h3 className='text-lg font-medium mb-4'>{activeNavItem.label}</h3>
-        <DashboardTable columns={activeNavItem.columns} data={viewData} />
-      </div>
-    );
-  };
-
-  return (
-    <>
-      {config.showNewProjectButton && (
-        <ClientNewProjectModal
-          isOpen={isNewProjectModalOpen}
-          onClose={() => setIsNewProjectModalOpen(false)}
-        />
-      )}
-
-      <main className='grid grid-cols-[250px_1fr] h-screen bg-gray-50'>
-        {/* Navigation */}
-        <div className='p-4 border-r border-gray-200'>
-          <h3 className='font-bold mb-6 text-lg'>CPMP DASHBOARD</h3>
-          <nav className='space-y-2'>
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
-                  activePage === item.id
-                    ? 'bg-white shadow-md font-medium'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className='text-brand' size={20} />
-                {item.label}
-              </button>
-            ))}
-          </nav>
-          <button
-            onClick={logout}
-            className='mt-6 flex items-center gap-2 text-red-500 p-3 hover:bg-red-50 rounded-lg w-full'
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-
-        {/* Main Content */}
-        <div className='flex flex-col overflow-hidden'>
-          <DashboardTop
-            onNewProject={
-              config.showNewProjectButton
-                ? () => setIsNewProjectModalOpen(true)
-                : null
-            }
-            userType={userType}
-          />
-          <div className='flex-1 overflow-auto p-6'>{renderContent()}</div>
-        </div>
-      </main>
-    </>
-  );
-};
-
-export default DashboardComponent;
