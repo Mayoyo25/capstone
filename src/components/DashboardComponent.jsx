@@ -267,24 +267,26 @@ const DashboardComponent = ({ userType = 'STUDENT' }) => {
 
       <main className='grid grid-cols-[250px_1fr] h-screen bg-gray-50'>
         {/* Navigation */}
-        <div className='p-4 border-r border-gray-200'>
-          <h3 className='font-bold mb-6 text-lg'>CPMP DASHBOARD</h3>
-          <nav className='space-y-2'>
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
-                  activePage === item.id
-                    ? 'bg-white shadow-md font-medium'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className='text-brand' size={20} />
-                {item.label}
-              </button>
-            ))}
-          </nav>
+        <div className='p-4 border-r border-gray-200 flex flex-col h-full w-full'>
+          <div className='flex-1'>
+            <h3 className='font-bold mb-6 text-lg'>CPMP DASHBOARD</h3>
+            <nav className='space-y-2'>
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActivePage(item.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
+                    activePage === item.id
+                      ? 'bg-white shadow-md font-medium'
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <item.icon className='text-brand' size={20} />
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+          </div>
           <button
             onClick={logout}
             className='mt-6 flex items-center gap-2 text-red-500 p-3 hover:bg-red-50 rounded-lg w-full'

@@ -32,15 +32,16 @@ function DashboardTop({ openNewProjectModal, userType }) {
           </svg>
           <input type='search' className='grow' placeholder='Search' />
         </label>
-        <button
-          className='btn btn-outline btn-sm bg-teal-600 text-white hover:text-gray-200 '
-          onClick={openNewProjectModal}
-        >
-          + New Project
-        </button>
+        {userType === 'CLIENT' && (
+          <button
+            className='btn btn-outline btn-sm bg-teal-600 text-white hover:text-gray-200 '
+            onClick={openNewProjectModal}
+          >
+            + New Project
+          </button>
+        )}
         <div className='justify-end gap-2 flex items-center'>
           <Settings className='cursor-pointer' size={14} />
-          <Bell className='cursor-pointer' size={14} />
         </div>
       </div>
     </section>
