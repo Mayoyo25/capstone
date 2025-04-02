@@ -48,34 +48,48 @@ const refreshAccessToken = async () => {
   }
 };
 
-// Request interceptor
-axiosInstance.interceptors.request.use(
+// Authenticated instance
+const axiosInstanceWithToken = axios.create({
+  baseURL: API_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+});
+
+// Request Interceptor for `axiosInstanceWithToken`
+axiosInstanceWithToken.interceptors.request.use(
   async (config) => {
     let token = getAccessToken();
 
-    if (token) {
-      const decodedToken = jwtDecode(token);
-
-      // If token is expired, refresh it
-      if (decodedToken.exp * 1000 < Date.now()) {
-        try {
-          token = await refreshAccessToken();
-        } catch (error) {
-          console.error('Token refresh failed:', error);
-          throw error;
-        }
-      }
-
-      config.headers.Authorization = `Bearer ${token}`;
+    // Exit immediately if no token is found
+    if (!token) {
+      console.warn('No token found, request aborted.');
+      return Promise.reject(new Error('No authentication token found.'));
     }
 
+    const decodedToken = jwtDecode(token);
+
+    // Refresh token if expired
+    if (decodedToken.exp * 1000 < Date.now()) {
+      try {
+        token = await refreshAccessToken();
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        return Promise.reject(error);
+      }
+    }
+
+    // Attach Authorization header
+    config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
-axiosInstance.interceptors.response.use(
+// Response Interceptor for `axiosInstanceWithToken`
+axiosInstanceWithToken.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response) {
@@ -104,4 +118,4 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+export { axiosInstance, axiosInstanceWithToken };

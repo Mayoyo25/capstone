@@ -1,5 +1,5 @@
 import { jwtDecode } from 'jwt-decode';
-import axiosInstance from './axiosConfig';
+import { axiosInstance } from './axiosConfig';
 
 // Helper function to retrieve access token from cookies
 const getAccessToken = () => {
