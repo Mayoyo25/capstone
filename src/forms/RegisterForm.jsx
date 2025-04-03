@@ -1,14 +1,11 @@
 import React from 'react';
 import AuthContainer from '../components/AuthFormContainer';
-import UserTypeMenu from '../components/UserTypeMenu';
+import { ChevronUp, ChevronDown, Loader } from 'lucide-react';
 import { VALID_USER_TYPES } from '../utils/userTypeUtils';
-import { ChevronUp ,ChevronDown} from 'lucide-react';
 
 function RegisterForm({
-  formState,
-  uiState,
+  formData,
   updateFormField,
-  updateUiState,
   handleSubmit,
   handleUserTypeSelect,
   navigate,
@@ -19,97 +16,133 @@ function RegisterForm({
     password,
     confirmPassword,
     selectedUserType,
-  } = formState;
-
-  const {
-    isUserMenuOpen,
     loading,
     error,
     roleError,
-  } = uiState;
+    emailError,
+  } = formData;
 
   return (
     <AuthContainer>
-      <div className="register-card">
-        <div className="logo">CPMP</div>
+      <div className='register-card'>
+        <div className='logo'>CPMP</div>
         <h2>Register</h2>
 
-        {error && <div className="text-red-500 bg-[#ffeeee] border-[1px] border-red-500 p-2.5 mb-4 rounded-sm">{error}</div>}
+        {error && (
+          <div className='text-red-500 bg-[#ffeeee] border-[1px] border-red-500 p-2.5 mb-4 rounded-sm'>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
-          <div className="input-group">
+          <div className='input-group'>
             <input
-              type="text"
+              type='text'
               value={fullName}
               onChange={(e) => updateFormField('fullName', e.target.value)}
-              placeholder="Full Name"
+              placeholder='Full Name'
               className='text-gray-900'
               required
+              disabled={loading}
             />
           </div>
-          <div className="input-group">
+          <div className='input-group'>
             <input
-              type="email"
+              type='email'
               value={email}
               onChange={(e) => updateFormField('email', e.target.value)}
-              placeholder="Email Address"
+              placeholder='Email Address'
               className='text-gray-900'
               required
+              disabled={loading}
             />
+            {emailError && (
+              <div className='text-red-500 text-sm mt-1'>{emailError}</div>
+            )}
           </div>
-          <div className="input-group">
+          <div className='input-group'>
             <input
-              type="password"
+              type='password'
               value={password}
               onChange={(e) => updateFormField('password', e.target.value)}
-              placeholder="Password"
+              placeholder='Password'
               className='text-gray-900'
               required
+              disabled={loading}
             />
           </div>
-          <div className="input-group">
+          <div className='input-group'>
             <input
-              type="password"
+              type='password'
               value={confirmPassword}
-              onChange={(e) => updateFormField('confirmPassword', e.target.value)}
-              placeholder="Confirm Password"
+              onChange={(e) =>
+                updateFormField('confirmPassword', e.target.value)
+              }
+              placeholder='Confirm Password'
               className='text-gray-900'
               required
+              disabled={loading}
             />
           </div>
-
-          <div className={`user-type-container ${roleError ? 'error' : ''}`}>
-            <button
-              type="button"
-              className={`user-type-button ${roleError ? 'error' : ''}`}
-              onClick={() => updateUiState('isUserMenuOpen', !isUserMenuOpen)}
+          <div className='dropdown-container w-full'>
+            <details
+              className='dropdown w-full mb-3'
+              id='user-type-dropdown'
+              disabled={loading}
             >
-              {selectedUserType}
-              {isUserMenuOpen ? <ChevronUp /> : <ChevronDown />}
-            </button>
-
-            {roleError && <div className="role-error">{roleError}</div>}
-
-            {isUserMenuOpen && (
-              <UserTypeMenu
-                onSelect={handleUserTypeSelect}
-                closeMenu={() => updateUiState('isUserMenuOpen', false)}
-                options={VALID_USER_TYPES}
-              />
+              <summary
+                className={`btn btn-outline w-full ${
+                  loading ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+              >
+                {selectedUserType}
+                {document
+                  .getElementById('user-type-dropdown')
+                  ?.hasAttribute('open') ? (
+                  <ChevronUp />
+                ) : (
+                  <ChevronDown />
+                )}
+              </summary>
+              <ul className='menu dropdown-content bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm'>
+                {VALID_USER_TYPES.map((type) => (
+                  <li
+                    key={type}
+                    onClick={() => !loading && handleUserTypeSelect(type)}
+                    className={loading ? 'opacity-70 cursor-not-allowed' : ''}
+                  >
+                    <a>{type}</a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+            {roleError && (
+              <div className='text-red-500 text-sm mt-1 mb-2'>{roleError}</div>
             )}
           </div>
 
           <button
-            type="submit"
-            className={`register-button ${loading ? 'loading' : ''}`}
+            type='submit'
+            className={`register-button ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
             disabled={loading}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? (
+              <span className='flex items-center justify-center'>
+                <Loader className='animate-spin mr-2 h-4 w-4' />
+                Registering...
+              </span>
+            ) : (
+              'Register'
+            )}
           </button>
           <button
-            type="button"
-            className="back-to-login-button"
-            onClick={() => navigate('/login')}
+            type='button'
+            className={`back-to-login-button ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
+            onClick={() => !loading && navigate('/login')}
             disabled={loading}
           >
             Back to Login
